@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/handheld",
+  "textures": {
+    "layer0": "miningcontestmod2026:item/element_pickaxe"
+  }
+}
