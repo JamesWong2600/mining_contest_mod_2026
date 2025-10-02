@@ -1,6 +1,6 @@
 {
-  "parent": "item/generated",
+  "parent": "block/cube_all",
   "textures": {
-    "layer0": "mining-contest-mod-2026:item/element_pickaxe"
+    "all": "mining-contest-mod-2026:block/uranium_ore"
   }
 }

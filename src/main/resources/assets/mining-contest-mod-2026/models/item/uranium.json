@@ -1,7 +1,7 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "mining-contest-mod-2026:item/element_pickaxe"
+    "layer0": "mining-contest-mod-2026:item/uranium"
   }
 }
 

@@ -1,4 +1,4 @@
-package org.link_uuid.miningContestMod2026.blocks.uranium;
+package org.link_uuid.miningContestMod2026.blocks.lead;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.block.AbstractBlock;
@@ -16,7 +16,7 @@ import org.link_uuid.miningContestMod2026.MiningContestMod2026;
 
 import java.util.function.Function;
 
-public class uranium_ore {
+public class lead_ore {
     private static Block register(String name, Function<AbstractBlock.Settings, Block> blockFactory, AbstractBlock.Settings settings, boolean shouldRegisterItem) {
         // Create a registry key for the block
         RegistryKey<Block> blockKey = keyOfBlock(name);
@@ -45,16 +45,16 @@ public class uranium_ore {
         return RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MiningContestMod2026.MOD_ID, name));
     }
 
-    public static final Block uraniumn_ore = register(
-            "uranium_ore",
+    public static final Block lead_ore = register(
+            "lead_ore",
             Block::new,
             AbstractBlock.Settings.create().strength(0.5f).sounds(BlockSoundGroup.ANVIL),
             true
     );
 
-    public static void initor() {
+    public static void lead_ore_init() {
         ItemGroupEvents.modifyEntriesEvent(ItemGroups.BUILDING_BLOCKS)
-                .register((itemGroup) -> itemGroup.add(org.link_uuid.miningContestMod2026.blocks.uranium.uranium_ore.uraniumn_ore.asItem()));
+                .register((itemGroup) -> itemGroup.add(org.link_uuid.miningContestMod2026.blocks.lead.lead_ore.lead_ore.asItem()));
     }
 
 }

@@ -1,0 +1,348 @@
+package org.link_uuid.miningContestMod2026.client.HUD;
+
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.Text;
+
+import java.util.List;
+
+
+public class PhoneScreen_useless extends Screen {
+    private final String htmlContent;
+    private final int phoneWidth = 320;
+    private final int phoneHeight = 480;
+    private int phoneX, phoneY;
+    private ButtonWidget closeButton;
+
+    public PhoneScreen_useless(String html) {
+        super(Text.literal("Phone"));
+        this.htmlContent = html;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+
+        // 计算位置
+        phoneX = (width - phoneWidth) / 2;
+        phoneY = (height - phoneHeight) / 2;
+
+        // 移除旧按钮
+        if (closeButton != null) {
+            this.remove(closeButton);
+        }
+
+        // 创建关闭按钮
+        closeButton = ButtonWidget.builder(Text.literal("Close"), button -> {
+            close();
+        }).dimensions(phoneX + phoneWidth - 60, phoneY + 5, 50, 20).build();
+
+        this.addDrawableChild(closeButton);
+    }
+
+    @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        // 绘制半透明覆盖层（但不覆盖手机区域）
+        context.fill(0, 0, width, height, 0x33000000);
+
+        // 绘制手机主体
+        context.fill(phoneX - 2, phoneY - 2, phoneX + phoneWidth + 2, phoneY + phoneHeight + 2, 0xFF666666);
+        context.fill(phoneX, phoneY, phoneX + phoneWidth, phoneY + phoneHeight, 0xFF1A1A1A);
+
+        // 标题栏
+        context.fill(phoneX, phoneY, phoneX + phoneWidth, phoneY + 25, 0xFF333333);
+        context.drawCenteredTextWithShadow(textRenderer, "Phone",
+                phoneX + phoneWidth / 2, phoneY + 8, 0xFFFFFF);
+
+        // 内容
+        renderContent(context);
+
+        super.render(context, mouseX, mouseY, delta);
+    }
+
+    private void renderContent(DrawContext context) {
+        String text = htmlContent != null ? htmlContent.replaceAll("<[^>]*>", "") : "No content";
+
+        List<OrderedText> lines = textRenderer.wrapLines(Text.literal(text), phoneWidth - 20);
+
+        int y = phoneY + 40;
+        for (OrderedText line : lines) {
+            if (y < phoneY + phoneHeight - 10) {
+                context.drawText(textRenderer, line, phoneX + 10, y, 0xFFFFFF, false);
+                y += 10;
+            }
+        }
+    }
+
+    @Override
+    public boolean shouldPause() {
+        return false;
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // 先处理按钮点击
+        if (super.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
+
+        // 点击外部关闭
+        if (mouseX < phoneX || mouseX > phoneX + phoneWidth ||
+                mouseY < phoneY || mouseY > phoneY + phoneHeight) {
+            close();
+            return true;
+        }
+
+        return false;
+    }
+}
+    /*private static final Identifier PHONE_TEXTURE =
+            Identifier.of("mining-contest-mod-2026", "textures/gui/phone.png");
+
+    private NativeImageBackedTexture phoneTexture;
+
+    public PhoneScreen(Text title) {
+        super(title);
+        generateHtmlTexture("<html><body><h1>Hello!</h1><p>Score: 100</p></body></html>");
+    }
+
+    private void generateHtmlTexture(String html) {
+        // Render HTML to BufferedImage (150x300)
+        System.out.println("1111111111111111111111111111");
+        Java2DRenderer renderer = new Java2DRenderer(html, 150);
+        System.out.println("2222222222222222222222222222");
+        BufferedImage image = renderer.getImage();
+
+        System.out.println("3333333333333333333333333333");
+        BufferedImage cropped = image.getSubimage(0, 0, 150, 300);
+
+        // Convert to NativeImage
+        NativeImage nativeImage = new NativeImage(cropped.getWidth(), cropped.getHeight(), false);
+        for (int y = 0; y < cropped.getHeight(); y++) {
+            for (int x = 0; x < cropped.getWidth(); x++) {
+                int argb = cropped.getRGB(x, y);
+                int a = (argb >> 24) & 0xFF;
+                int r = (argb >> 16) & 0xFF;
+                int g = (argb >> 8) & 0xFF;
+                int b = (argb) & 0xFF;
+                int rgba = (r << 24) | (g << 16) | (b << 8) | a; // RGBA format
+                nativeImage.setColor(x, y, rgba);
+            }
+        }
+
+        phoneTexture = new NativeImageBackedTexture(() -> "phone_texture", nativeImage);
+        // Register texture in Minecraft
+        this.client.getTextureManager().registerTexture(PHONE_TEXTURE, phoneTexture);
+    }
+
+    @Override
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        // 背景
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        int screenWidth = client.getWindow().getScaledWidth();
+        int screenHeight = client.getWindow().getScaledHeight();
+
+        int phoneWidth = 150;
+        int phoneHeight = 300;
+        int x = screenWidth - phoneWidth / 2;
+        int y = screenHeight / 2 - phoneHeight / 2;
+
+        System.out.println("yyyy");
+        // 畫手機圖片
+        drawContext.drawTexture(
+                RenderPipelines.GUI_TEXTURED,
+                PHONE_TEXTURE,
+                x, y,
+                0, 0,
+                phoneWidth, phoneHeight,
+                phoneWidth, phoneHeight
+        );
+        // 動態文字
+        String dynamicText = "玩家分數: 100";
+        drawContext.drawText(
+                client.textRenderer,
+                Text.literal(dynamicText),
+                x + 10, y + 10,
+                0xFFFFFF,
+                false
+        );
+
+        super.render(drawContext, mouseX, mouseY, delta);
+
+    }*/
+
+
+
+
+
+
+
+
+    /*private NativeImageBackedTexture phoneTexture;
+    private Identifier textureId;
+
+    public PhoneScreen() {
+        super(Text.literal("Phone"));
+
+        // Allocate 150×300 pixel texture
+        //NativeImage image = new NativeImage(150, 300, true);
+        phoneTexture = new NativeImageBackedTexture("Phone", 150, 300, true);
+        textureId = Identifier.of("mining-contest-mod-2026", "phone");
+        MinecraftClient.getInstance().getTextureManager().registerTexture(textureId, phoneTexture);
+    }
+
+    @Override
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        super.render(drawContext, mouseX, mouseY, delta);
+
+        // Fake update for now: fill with black
+        NativeImage img = phoneTexture.getImage();
+        img.fillRect(0, 0, img.getWidth(), img.getHeight(), 0xFF000000);
+        phoneTexture.upload();
+
+        // Draw at fixed position
+        int x = 20;
+        int y = 20;
+        drawContext.drawTexture(RenderPipelines.GUI_TEXTURED, textureId,
+                x, y, 0, 0, 150, 300, 150, 300);
+    }*/
+
+
+
+    /* public PhoneScreen() {
+        super(null);
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+
+        // 初始化 NativeImage 和 Texture
+        NativeImage image = new NativeImage(800, 600, false);
+        phoneTexture = new NativeImageBackedTexture(() -> "phone_texture", image);
+
+        // 創建 Identifier 並註冊
+        textureId = Identifier.of("mining-contest-mod-2026", "textures/gui/phone.png");
+        MinecraftClient.getInstance().getTextureManager().registerTexture(textureId, phoneTexture);
+
+        // 初始化 JCEF Offscreen Browser
+        browser = createOffscreenBrowser(800, 600);
+    }
+
+    public void renderPhone(DrawContext drawContext) {
+        // 更新 JCEF Offscreen buffer 到 NativeImage
+        //updateBrowserImage();
+
+        // 上傳 GPU 紋理
+        //phoneTexture.upload();
+
+        MinecraftClient client = MinecraftClient.getInstance();
+        int x = (int) (client.getWindow().getScaledWidth() * 0.85f);
+        int y = (int) (client.getWindow().getScaledHeight() * 0.16f);
+
+        drawContext.drawTexture(
+                RenderPipelines.GUI_TEXTURED,
+                textureId,
+                x, y,
+                0, 0,
+                phoneTexture.getImage().getWidth(),
+                phoneTexture.getImage().getHeight(),
+                phoneTexture.getImage().getWidth(),
+                phoneTexture.getImage().getHeight()
+        );
+    }
+    @Override
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        super.render(drawContext, mouseX, mouseY, delta);
+
+        // 調用自定義渲染
+        renderPhone(drawContext);
+    }
+
+
+     * 將 JCEF offscreen buffer 的像素寫入 NativeImage
+
+    private void updateBrowserImage() {
+        NativeImage image = phoneTexture.getImage();
+
+        // TODO: 使用 JCEF offscreen API 填充 image
+        // 示意：
+        // byte[] pixels = browser.getOffscreenPixels();
+        // image.copyFrom(pixels);
+    }
+
+
+     * 創建 Offscreen Browser（示意方法，依你 JCEF 封裝調整）
+
+    private CefBrowser createOffscreenBrowser(int width, int height) {
+        // TODO: 實際創建 offscreen browser
+        return null;
+    }
+    */
+
+
+   /* @Override
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        super.render(drawContext, mouseX, mouseY, delta);
+        phoneScreen.renderPhone(drawContext);
+    }
+
+    private final CefBrowser browser;
+    private NativeImageBackedTexture phoneTexture;
+    private Identifier textureId;
+
+    protected PhoneScreen(CefBrowser browser) {
+        super(null);
+        this.browser = browser;
+        NativeImage image = new NativeImage(800, 600, false);
+        NativeImageBackedTexture texture = new NativeImageBackedTexture(
+                () -> "phone_texture",
+                image
+        );
+        Identifier textureId = Identifier.of("mining-contest-mod-2026", "textures/gui/phone.png");
+
+        MinecraftClient.getInstance().getTextureManager().registerTexture(textureId, phoneTexture);
+        //textureId = Identifier.of("mining-contest-mod-2026", "textures/gui/phone.png");
+        //MinecraftClient.getInstance().getTextureManager().registerTexture(textureId, texture);
+
+    }
+
+    private void renderPhone(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        super.render(drawContext, mouseX, mouseY, delta);
+        updateBrowserImage();
+        phoneTexture.upload(); // 更新 GPU 紋理
+        MinecraftClient client = MinecraftClient.getInstance();
+        int x = (int) (client.getWindow().getScaledWidth() * 0.85f);
+        int y = (int) (client.getWindow().getScaledHeight() * 0.16f);
+
+        // 在 1.21+ 直接傳 NativeImageBackedTexture
+        drawContext.drawTexture(
+                RenderPipelines.GUI_TEXTURED,
+                textureId,  // ← 直接用這個物件
+                x, y,
+                0, 0,
+                phoneTexture.getImage().getWidth(),
+                phoneTexture.getImage().getHeight(),
+                phoneTexture.getImage().getWidth(),
+                phoneTexture.getImage().getHeight()
+        );
+    }
+
+    private NativeImage getBrowserImage() {
+        // TODO: 將 cefBrowser 的 offscreen buffer 更新到 NativeImage
+        // 這裡需要用 JCEF Offscreen API
+        return phoneTexture.getImage();
+    }
+
+    private void updateBrowserImage() {
+        NativeImage image = phoneTexture.getImage();
+        // TODO: 把 JCEF offscreen buffer 的 RGBA 寫入 image
+        // 示意:
+        // byte[] pixels = browser.getOffscreenPixels();
+        // image.copyFrom(pixels);
+    }
+    */
+

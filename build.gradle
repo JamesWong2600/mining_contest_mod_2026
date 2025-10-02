@@ -33,6 +33,8 @@ repositories {
     // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
+    mavenCentral()
+    maven { url "https://maven.fabricmc.net/" }
 }
 
 dependencies {
@@ -42,6 +44,21 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    //implementation("com.github.doraig:jcef:78.1-win64")
+
+    modImplementation 'org.nanohttpd:nanohttpd:2.3.1'
+    include 'org.nanohttpd:nanohttpd:2.3.1'
+    implementation "org.xhtmlrenderer:flying-saucer-core:9.1.22"
+    implementation 'me.friwi:jcefmaven:135.0.20'
+    implementation "org.jsoup:jsoup:1.16.1"
+    implementation("net.fabricmc:sponge-mixin:${project.mixin_version}")
+    annotationProcessor("net.fabricmc:sponge-mixin:${project.mixin_version}")
+    annotationProcessor("net.fabricmc:fabric-loom:${project.loom_version}")
+
+    implementation("org.openjfx:javafx-base:26-ea+7")
+    implementation("org.openjfx:javafx-graphics:26-ea+7")
+    implementation("org.openjfx:javafx-swing:26-ea+7")
+    implementation("org.openjfx:javafx-web:26-ea+7")
 }
 
 processResources {
@@ -103,3 +120,21 @@ publishing {
         // retrieving dependencies.
     }
 }
+
+/*tasks.named("runClient") {
+    doFirst {
+        def nativeDir = file("natives/windows").absolutePath
+
+        jvmArgs += "-Djava.library.path=${nativeDir}"
+    }
+}*/
+
+tasks.withType(Jar).configureEach {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+remapJar {
+    // 讓 Loom 將依賴拆分成 class 檔案
+    addNestedDependencies = true
+}
+

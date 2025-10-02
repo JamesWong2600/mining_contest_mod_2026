@@ -2,12 +2,12 @@
   "layers": {
     "humanoid": [
       {
-        "texture": "fabric-docs-reference:guidite"
+        "texture": "mining-contest-mod-2026:lead_3"
       }
     ],
     "humanoid_leggings": [
       {
-        "texture": "fabric-docs-reference:guidite"
+        "texture": "mining-contest-mod-2026:lead_1"
       }
     ]
   }

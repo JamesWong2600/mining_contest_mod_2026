@@ -6,12 +6,15 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "mining-contest-mod-2026:uranium"
+          "name": "mining-contest-mod-2026:iodine"
         }
       ],
       "conditions": [
         {
-          "condition": "minecraft:survives_explosion"
+          "condition": "minecraft:match_tool",
+          "predicate": {
+            "items": "mining-contest-mod-2026:element_pickaxe"
+          }
         }
       ]
     }

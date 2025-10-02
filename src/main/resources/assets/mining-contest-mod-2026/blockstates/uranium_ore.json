@@ -1,6 +1,7 @@
 {
-  "model": {
-    "type": "minecraft:model",
-    "model": "mining-contest-mod-2026:block/uranium_ore"
+  "variants": {
+    "": {
+      "model": "mining-contest-mod-2026:block/uranium_ore"
+    }
   }
 }

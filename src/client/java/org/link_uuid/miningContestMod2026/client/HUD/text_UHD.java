@@ -1,4 +1,88 @@
 package org.link_uuid.miningContestMod2026.client.HUD;
 
-public class text {
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+
+import static org.link_uuid.miningContestMod2026.armor.lead.lead_helmet.*;
+import static org.link_uuid.miningContestMod2026.armor.lead.lead_helmet.lead_boot_item;
+
+@Environment(EnvType.CLIENT)
+public class text_UHD implements HudRenderCallback {
+    private static float anti_radiation = 0;
+    @Override
+    public void onHudRender(DrawContext drawContext, RenderTickCounter tickCounter) {
+        MinecraftClient client = MinecraftClient.getInstance();
+        TextRenderer textRenderer = client.textRenderer;
+        TextRenderer scoreRenderer = client.textRenderer;
+        TextRenderer titleRenderer = client.textRenderer;
+        PlayerEntity player = client.player;
+        ItemStack helmet = player.getEquippedStack(EquipmentSlot.HEAD);
+        ItemStack chestpalte = player.getEquippedStack(EquipmentSlot.CHEST);
+        ItemStack leg = player.getEquippedStack(EquipmentSlot.LEGS);
+        ItemStack boot = player.getEquippedStack(EquipmentSlot.FEET);
+
+
+        // Check if it's a golden helmet
+        if (helmet.getItem() == lead_helmet_item) {
+            anti_radiation+= 0.2F;
+        }
+        if (chestpalte.getItem() == lead_chestplate_item) {
+            anti_radiation+= 0.4F;
+        }
+        if (leg.getItem() == lead_legging_item) {
+            anti_radiation+= 0.3F;
+        }
+        if (boot.getItem() == lead_boot_item) {
+            anti_radiation+= 0.1F;
+        }
+        String text;
+        String score_text;
+        String title_text;
+        if(anti_radiation == 1){
+        text = "你已受到鉛最高防護，不會受到輻射傷害，防護指數: " + anti_radiation;
+        }
+        else if(anti_radiation == 0){
+        text = " ";
+        }
+        else{
+        text = "你已受到鉛防護，所吸收的輻射大幅降低，防護指數: " + anti_radiation;
+        }
+        int color = 0xFF000000;
+        int x = client.getWindow().getScaledWidth() / 2 - textRenderer.getWidth(text) / 2;
+        int y = (int) (client.getWindow().getScaledHeight() * 0.8f);
+        anti_radiation = 0;
+        drawContext.drawText(textRenderer, text, x, y, color, false);
+        /*Identifier IMAGE =
+                Identifier.of("mining-contest-mod-2026", "textures/gui/phone.png");
+        int phone_x = (int) (client.getWindow().getScaledWidth() * 0.83f);
+        int phone_y = (int) (client.getWindow().getScaledHeight() * 0.16f);
+        int width = 64; // your image width
+        int height = 64; // your image height
+        drawContext.drawTexture(RenderPipelines.GUI_TEXTURED, IMAGE, phone_x, phone_y,0,0, 120, 210,120,210);
+
+        int color = 0xFF000000; // White
+        int score_color = 0xFF00FF00; ; // White
+        title_text = "麥塊新春挖礦大賽2026";
+        int x3 = (int) (client.getWindow().getScaledWidth() * 0.845f);
+        int y3 = (int) (client.getWindow().getScaledHeight() * 0.23f);
+        drawContext.drawText(scoreRenderer, title_text, x3, y3, color, false);
+        score_text = "分數: " + mark;
+        int x2 = (int) (client.getWindow().getScaledWidth() * 0.9f);
+        int y2 = (int) (client.getWindow().getScaledHeight() * 0.31f);
+        drawContext.drawText(scoreRenderer, score_text, x2, y2, color, false);
+        // Calculate center X
+        int x = client.getWindow().getScaledWidth() / 2 - textRenderer.getWidth(text) / 2;
+        int y = (int) (client.getWindow().getScaledHeight() * 0.8f);
+        anti_radiation = 0;
+        drawContext.drawText(textRenderer, text, x, y, score_color, false);
+         */
+    }
 }
