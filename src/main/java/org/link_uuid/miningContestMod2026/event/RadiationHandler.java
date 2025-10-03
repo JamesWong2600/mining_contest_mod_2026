@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import static org.link_uuid.miningContestMod2026.armor.lead.lead_helmet.*;
 import static org.link_uuid.miningContestMod2026.armor.lead.lead_helmet.lead_boot_item;
+import static org.link_uuid.miningContestMod2026.blocks.uranium.uranium_deepslate_ore.uranium_deepslate_ore;
 import static org.link_uuid.miningContestMod2026.blocks.uranium.uranium_ore.uraniumn_ore;
 import static org.link_uuid.miningContestMod2026.event.RadiationHandler_old.DAMAGE_RADIUS;
 
@@ -62,7 +63,7 @@ public class RadiationHandler {
                     for (int dy = -radius; dy <= radius; dy++) {
                         for (int dz = -radius; dz <= radius; dz++) {
                             BlockPos check = playerPos.add(dx, dy, dz);
-                            if (world.getBlockState(check).getBlock() == uraniumn_ore) {
+                            if (world.getBlockState(check).getBlock() == uraniumn_ore || world.getBlockState(check).getBlock() == uranium_deepslate_ore) {
                                 double dist = Math.sqrt(playerPos.getSquaredDistance(check));
                                 if (dist < nearestDistance) nearestDistance = dist; // 只保留最小距離
                             }
@@ -82,7 +83,7 @@ public class RadiationHandler {
 
 // 建 packet 並發送
 
-
+                    System.out.println(nearestDistance);
                     ServerPlayNetworking.send(player, new RadiationPackets(nearestDistance));
 
 
@@ -104,7 +105,7 @@ public class RadiationHandler {
                 if (boot.getItem() == lead_boot_item) {
                     anti_radiation+= 0.1F;
                 }
-                if (!(anti_radiation == 1)){
+                if (!(anti_radiation == 1) && !(1/nearestDistance <= 0.3)){
                     player.damage(world, world.getDamageSources().magic(), (1-anti_radiation) * (float) nearestDistance * 0.1f);
                 }
                 anti_radiation = 0;

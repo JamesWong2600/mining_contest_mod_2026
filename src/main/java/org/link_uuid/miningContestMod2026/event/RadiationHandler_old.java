@@ -43,7 +43,7 @@ public class RadiationHandler_old {
                     anti_radiation+= 0.1F;
                 }
                 if (!(anti_radiation == 1)){
-                player.damage(world, world.getDamageSources().magic(), 1-anti_radiation);
+                //player.damage(world, world.getDamageSources().magic(), 1-anti_radiation);
                 }
                 anti_radiation = 0;
 

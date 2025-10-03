@@ -1,6 +1,9 @@
 {
   "item.mining-contest-mod-2026.element_pickaxe": "元素鎬",
   "block.mining-contest-mod-2026.uranium_ore": "鈾原礦",
+  "block.mining-contest-mod-2026.uranium_deepslate_ore": "深層鈾原礦",
+  "block.mining-contest-mod-2026.lead_deepslate_ore": "深層鉛原礦",
+  "block.mining-contest-mod-2026.iodine_deepslate_ore": "深層碘原礦",
   "item.mining-contest-mod-2026.uranium": "鈾",
   "item.mining-contest-mod-2026.lead": "鉛",
   "block.mining-contest-mod-2026.lead_ore": "鉛原礦",

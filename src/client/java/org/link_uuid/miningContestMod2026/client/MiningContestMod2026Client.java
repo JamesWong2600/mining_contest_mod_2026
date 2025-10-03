@@ -3,6 +3,7 @@ package org.link_uuid.miningContestMod2026.client;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
@@ -51,10 +52,13 @@ public class MiningContestMod2026Client implements ClientModInitializer {
     private PhoneScreen_useless phoneScreen;
     private KeyBinding openPhoneKey;
     public static float alpha;
-    public static double distance;
+    //public static double distance;
     public String s = "";
+    public double distance_value;
     @Override
     public void onInitializeClient() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        PlayerEntity player = client.player;
         HudRenderCallback.EVENT.register(new text_UHD());
         HudRenderCallback.EVENT.register(new scorecard_UHD());
         HudRenderCallback.EVENT.register(this::onHudRender);
@@ -65,16 +69,6 @@ public class MiningContestMod2026Client implements ClientModInitializer {
             );
         }
 
-        ClientPlayNetworking.registerGlobalReceiver(RadiationPackets.ID,
-                (payload, context) -> {
-                    distance = payload.dist();
-                    context.client().execute(() -> {
-                        // 在 client thread 更新數據
-                        s = String.valueOf(distance);
-                        System.out.println("收到伺服端距離: " + s);
-                    });
-                }
-        );
         //HudRenderCallback.EVENT.register(this::renderImage);
         /*openPhoneKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.miningcontestmod.open_phone",
@@ -161,8 +155,8 @@ public class MiningContestMod2026Client implements ClientModInitializer {
             });*/
         }
         else{
-                distance = Cacher.get(player.getUuid());
-                s = String.valueOf(distance);
+                scorecard_UHD.distance[0] = Cacher.get(player.getUuid());
+                s = String.valueOf(scorecard_UHD.distance[0]);
         }
         //player.sendMessage(Text.literal(player.getUuid() + " " + s),false);
         // Check if it's a golden helmet
@@ -181,34 +175,9 @@ public class MiningContestMod2026Client implements ClientModInitializer {
 
         if (client.player == null || client.world == null) return;
 
-       // BlockPos playerPos = client.player.getBlockPos();
-       // double nearestDistSq = Double.MAX_VALUE;
+        if(scorecard_UHD.distance[0] == -1) return;
 
-        // 找最近的 TNT
-       /* for (int dx = -RadiationHandler_old.RADIUS; dx <= RadiationHandler_old.RADIUS; dx++) {
-            for (int dy = -RadiationHandler_old.RADIUS; dy <= RadiationHandler_old.RADIUS; dy++) {
-                for (int dz = -RadiationHandler_old.RADIUS; dz <= RadiationHandler_old.RADIUS; dz++) {
-                    BlockPos check = playerPos.add(dx, dy, dz);
-                    if (client.world.getBlockState(check).getBlock() == uraniumn_ore) {
-                        double distSq = playerPos.getSquaredDistance(check);
-                        if (distSq < nearestDistSq) {
-                            nearestDistSq = distSq;
-                        }
-                    }
-                }
-            }
-        }
-*/
-
-
-       // if (nearestDistSq == Double.MAX_VALUE) return;
-
-        //double dist = Math.sqrt(nearestDistSq);
-        //if (dist > RadiationHandler_old.RADIUS) return;
-
-        if(distance == -1) return;
-
-        alpha = (float) (1 / distance);
+        alpha = (float) (1 / scorecard_UHD.distance[0]);
         if (alpha <= 0) return;
 
         int width = client.getWindow().getScaledWidth();

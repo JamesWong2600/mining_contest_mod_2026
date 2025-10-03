@@ -24,23 +24,52 @@ import static org.link_uuid.miningContestMod2026.client.MiningContestMod2026Clie
 
 public class scorecard_UHD implements HudRenderCallback {
     private static float anti_radiation = 0;
-    public double distance;
-    public String distance_score;
+    public static double[] distance = new double[1];
+    public static double[] distance_score = new double[1];
     @Override
     public void onHudRender(DrawContext drawContext, RenderTickCounter tickCounter) {
         MinecraftClient client = MinecraftClient.getInstance();
         TextRenderer textRenderer = client.textRenderer;
         PlayerEntity player = client.player;
-        distance = Cacher.get(player.getUuid());
+        //MiningContestMod2026Client.distance = Cacher.get(player.getUuid());
 
-
-        if( FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
         ClientPlayNetworking.registerGlobalReceiver(RadiationPackets.ID,
                 (payload, context) -> {
-                    distance = payload.dist();
+                    distance[0] = payload.dist();
+                    context.client().execute(() -> {
+                        // 在 client thread 更新數據
+                        distance_score[0] = distance[0];
+
+                        //System.out.println("收到伺服端距離: " + s);
+                    });
                 }
         );
+
+        //player.sendMessage(Text.of("AAA"+distance_score[0]),false);
+
+        if(distance[0] == -1){
+            distance_score[0] = 0;
+        }else{
+            if(distance[0] > 0){
+            R = R+ ((float) (1/distance[0]));
+            }
+            distance_score[0] = 1/distance[0];
         }
+        /*if(!client.isInSingleplayer()) {
+        ClientPlayNetworking.registerGlobalReceiver(RadiationPackets.ID,
+                (payload, context) -> {
+                    MiningContestMod2026Client.distance = payload.dist();
+                    context.client().execute(() -> {
+                        if(MiningContestMod2026Client.distance == -1){
+                            distance_score[0] = String.valueOf(0);
+                        }else{
+                            R = R+ ((float) (1/MiningContestMod2026Client.distance));
+                            distance_score[0] = String.valueOf(1/MiningContestMod2026Client.distance);
+                        }
+                    });
+                }
+        );
+        }*/
 
 
         String remainingTime = "120";
@@ -48,12 +77,7 @@ public class scorecard_UHD implements HudRenderCallback {
         String playerCount = "24";
         String ping = "45";
         String mspt = "15";
-        R = R+ ((float) (1/distance));
-        if(distance == -1){
-            distance_score = "0";
-        }else{
-            distance_score = String.valueOf(1/distance);
-        }
+
         // Use fixed-width formatting
         Text[] lines = {
                 // Header - gold and bold
@@ -68,7 +92,7 @@ public class scorecard_UHD implements HudRenderCallback {
                 // Player count - label in white, value in aqua, unit in gray
                 createLine("玩家數量: ", String.valueOf(playerCount), " 人", Formatting.GREEN),
 
-                createLine("當前環境輻射值: ", distance_score, " Sv", Formatting.GREEN),
+                createLine("當前環境輻射值: ", String.format("%.2f", distance_score[0]), " Sv", Formatting.GREEN),
 
                 createLine("當前身體倫琴值: ", String.format("%.2f", R), " R", Formatting.GREEN),
 
