@@ -43,8 +43,17 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
+    implementation(include('redis.clients:jedis:4.4.6'))
+    implementation(include('org.apache.commons:commons-pool2:2.11.1'))
+
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     //implementation("com.github.doraig:jcef:78.1-win64")
+
+    // Cloth Config
+
+
+    implementation 'org.xerial:sqlite-jdbc:3.42.0.0'
+    include 'org.xerial:sqlite-jdbc:3.42.0.0'
 
     modImplementation 'org.nanohttpd:nanohttpd:2.3.1'
     include 'org.nanohttpd:nanohttpd:2.3.1'

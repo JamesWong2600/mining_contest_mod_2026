@@ -13,6 +13,7 @@ import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderTickCounter;
+import net.minecraft.client.session.Session;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
@@ -30,7 +31,7 @@ import org.link_uuid.miningContestMod2026.client.HUD.scorecard_UHD;
 import org.link_uuid.miningContestMod2026.client.HUD.text_UHD;
 import org.link_uuid.miningContestMod2026.event.RadiationHandler;
 import org.link_uuid.miningContestMod2026.event.RadiationHandler_old;
-import org.link_uuid.miningContestMod2026.packets.RadiationPackets;
+import org.link_uuid.miningContestMod2026.packets.*;
 import org.objectweb.asm.tree.analysis.Value;
 
 import static org.link_uuid.miningContestMod2026.armor.lead.lead_helmet.*;
@@ -66,6 +67,22 @@ public class MiningContestMod2026Client implements ClientModInitializer {
             PayloadTypeRegistry.playS2C().register(
                     RadiationPackets.ID,
                     RadiationPackets.CODEC
+            );
+            PayloadTypeRegistry.playS2C().register(
+                    SessionPackets.ID,
+                    SessionPackets.CODEC
+            );
+            PayloadTypeRegistry.playS2C().register(
+                    PingPackets.ID,
+                    PingPackets.CODEC
+            );
+            PayloadTypeRegistry.playS2C().register(
+                    MsptPackets.ID,
+                    MsptPackets.CODEC
+            );
+            PayloadTypeRegistry.playS2C().register(
+                    PlayerAmountPackets.ID,
+                    PlayerAmountPackets.CODEC
             );
         }
 

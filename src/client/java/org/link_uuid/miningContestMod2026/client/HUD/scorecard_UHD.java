@@ -8,6 +8,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.network.ServerInfo;
+import net.minecraft.client.realms.util.TextRenderingUtils;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
@@ -17,7 +19,12 @@ import net.minecraft.util.Formatting;
 import org.link_uuid.miningContestMod2026.MiningContestMod2026;
 import org.link_uuid.miningContestMod2026.cache.Cacher;
 import org.link_uuid.miningContestMod2026.client.MiningContestMod2026Client;
+import org.link_uuid.miningContestMod2026.packets.MsptPackets;
+import org.link_uuid.miningContestMod2026.packets.PingPackets;
 import org.link_uuid.miningContestMod2026.packets.RadiationPackets;
+import org.link_uuid.miningContestMod2026.packets.SessionPackets;
+
+import javax.sound.sampled.Line;
 
 import static org.link_uuid.miningContestMod2026.armor.lead.lead_helmet.*;
 import static org.link_uuid.miningContestMod2026.client.MiningContestMod2026Client.R;
@@ -26,13 +33,24 @@ public class scorecard_UHD implements HudRenderCallback {
     private static float anti_radiation = 0;
     public static double[] distance = new double[1];
     public static double[] distance_score = new double[1];
+    public static int[] session = new int[1];
+    public static int[] session_score = new int[1];
+    public static int[] pings = new int[1];
+    public static int[] pings_score = new int[1];
+    public static int[] mspt = new int[1];
+    public static int[] mspt_score = new int[1];
+    public static Text[] lines = new Text[10];
     @Override
     public void onHudRender(DrawContext drawContext, RenderTickCounter tickCounter) {
         MinecraftClient client = MinecraftClient.getInstance();
+        ServerInfo serverInfo = client.getCurrentServerEntry();
+        //if (serverInfo != null) {
+       //     pings[0] = (int) serverInfo.ping;
+       // }
         TextRenderer textRenderer = client.textRenderer;
         PlayerEntity player = client.player;
         //MiningContestMod2026Client.distance = Cacher.get(player.getUuid());
-
+        //player.sendMessage(Text.literal(String.valueOf(pings[0])), false);
         ClientPlayNetworking.registerGlobalReceiver(RadiationPackets.ID,
                 (payload, context) -> {
                     distance[0] = payload.dist();
@@ -42,6 +60,36 @@ public class scorecard_UHD implements HudRenderCallback {
 
                         //System.out.println("收到伺服端距離: " + s);
                     });
+                }
+        );
+
+        ClientPlayNetworking.registerGlobalReceiver(SessionPackets.ID,
+                (payload, context) -> {
+                    session[0] = payload.session();
+                    context.client().execute(() -> {
+                        session_score[0] = session[0];
+                    });
+                }
+        );
+
+        ClientPlayNetworking.registerGlobalReceiver(PingPackets.ID,
+                (payload, context) -> {
+                   pings[0] = payload.ping();
+                    context.client().execute(() -> {
+                        pings_score[0] = pings[0];
+                        //player.sendMessage(Text.literal(String.valueOf(pings_score[0])), false);
+                    });
+
+              }
+       );
+
+        ClientPlayNetworking.registerGlobalReceiver(MsptPackets.ID,
+                (payload, context) -> {
+                    mspt[0] = payload.mspt();
+                    context.client().execute(() -> {
+                        mspt_score[0] = mspt[0];
+                    });
+
                 }
         );
 
@@ -75,35 +123,57 @@ public class scorecard_UHD implements HudRenderCallback {
         String remainingTime = "120";
         String yourScore = "1500";
         String playerCount = "24";
-        String ping = "45";
+        //String ping = "45";
         String mspt = "15";
 
         // Use fixed-width formatting
-        Text[] lines = {
-                // Header - gold and bold
-                Text.literal("麥塊新春挖礦大賽2026").formatted(Formatting.GOLD, Formatting.BOLD),
 
-                // Remaining time - label in white, value in green, unit in gray
-                createLine("剩餘時間: ", String.valueOf(remainingTime), " s", Formatting.GREEN),
+        if(session_score[0] == 2){
+            lines = new Text[]{
+                    // Header - gold and bold
+                    (Text) Text.literal("麥塊新春挖礦大賽2026").formatted(Formatting.GOLD, Formatting.BOLD),
 
-                // Your score - label in white, value in yellow, unit in gray
-                createLine("你的分數: ", String.valueOf(MiningContestMod2026.mark), " 分", Formatting.GREEN),
+                    // Remaining time - label in white, value in green, unit in gray
+                    (Text) createLine("剩餘時間: ", String.valueOf(remainingTime), " s", Formatting.GREEN),
 
-                // Player count - label in white, value in aqua, unit in gray
-                createLine("玩家數量: ", String.valueOf(playerCount), " 人", Formatting.GREEN),
+                    // Your score - label in white, value in yellow, unit in gray
+                    (Text)  createLine("你的分數: ", String.valueOf(MiningContestMod2026.mark), " 分", Formatting.GREEN),
 
-                createLine("當前環境輻射值: ", String.format("%.2f", distance_score[0]), " Sv", Formatting.GREEN),
+                    // Player count - label in white, value in aqua, unit in gray
+                    (Text) createLine("玩家數量: ", String.valueOf(playerCount), " 人", Formatting.GREEN),
 
-                createLine("當前身體倫琴值: ", String.format("%.2f", R), " R", Formatting.GREEN),
+                    (Text) createLine("當前環境輻射值: ", String.format("%.2f", distance_score[0]), " Sv", Formatting.GREEN),
 
-                createLine("輻射防護能力: ", String.valueOf(ping), " %", Formatting.GREEN),
-                // Ping - label in white, value in light purple, unit in gray
-                createLine("ping: ", String.valueOf(ping), " ms", Formatting.GREEN),
+                    (Text) createLine("當前身體倫琴值: ", String.format("%.2f", R), " R", Formatting.GREEN),
 
-                // MSPT - label in white, value in red, unit in gray
-                createLine("mspt: ", String.valueOf(mspt), " ms", Formatting.GREEN),
+                    (Text)  createLine("輻射防護能力: ", String.valueOf(pings_score[0]), " %", Formatting.GREEN),
+                    // Ping - label in white, value in light purple, unit in gray
+                    (Text) createLine("ping: ", String.valueOf(pings_score[0]), " ms", getPingColor(pings_score[0])),
 
-        };
+                    // MSPT - label in white, value in red, unit in gray
+                    (Text) createLine("mspt: ", String.valueOf(mspt_score[0]), " ms", Formatting.GREEN),
+
+            };
+        }
+        else{
+            lines = new Text[]{
+                    // Header - gold and bold
+                    (Text) Text.literal("麥塊新春挖礦大賽2026").formatted(Formatting.GOLD, Formatting.BOLD),
+
+                    // Remaining time - label in white, value in green, unit in gray
+                    (Text) createLine("目前狀態: ", "請等待比賽開始", "", Formatting.GREEN),
+
+                    // Player count - label in white, value in aqua, unit in gray
+                    (Text) createLine("玩家數量: ", String.valueOf(playerCount), " 人", Formatting.GREEN),
+                    // Ping - label in white, value in light purple, unit in gray
+                    (Text) createLine("ping: ", String.valueOf(pings_score[0]), " ms", getPingColor(pings_score[0])),
+
+                    // MSPT - label in white, value in red, unit in gray
+                    (Text) createLine("mspt: ", String.valueOf(mspt_score[0]), " ms", Formatting.GREEN),
+
+            };
+        }
+
 
         // Position calculation
         int screenWidth = client.getWindow().getScaledWidth();
@@ -167,5 +237,13 @@ public class scorecard_UHD implements HudRenderCallback {
         return Text.literal(label).formatted(Formatting.WHITE)
                 .append(Text.literal(value).formatted(valueColor))
                 .append(Text.literal(unit).formatted(Formatting.GRAY));
+    }
+
+    public static Formatting getPingColor(int ping) {
+        if (ping == 0) return Formatting.GRAY;
+        if (ping < 50) return Formatting.GREEN;
+        if (ping < 100) return Formatting.YELLOW;
+        if (ping < 200) return Formatting.GOLD;
+        return Formatting.RED;
     }
 }
