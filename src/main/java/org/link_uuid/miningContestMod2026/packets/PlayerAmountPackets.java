@@ -6,7 +6,7 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
-public record PlayerAmountPackets(int playeramount) implements CustomPayload {
+public record PlayerAmountPackets(String playeramount) implements CustomPayload {
     public static final Identifier PLAYER_AMOUNT_PACKET =
             Identifier.of("mining-contest-mod-2026", "playeramount");
     public static final Id<PlayerAmountPackets> ID = new Id<>(PLAYER_AMOUNT_PACKET);
@@ -15,11 +15,11 @@ public record PlayerAmountPackets(int playeramount) implements CustomPayload {
             PacketCodec.of(PlayerAmountPackets::encode, PlayerAmountPackets::decode);
 
     private static void encode(PlayerAmountPackets packet, RegistryByteBuf buf) {
-        buf.writeInt(packet.playeramount);
+        buf.writeString(packet.playeramount);
     }
 
     private static PlayerAmountPackets decode(RegistryByteBuf buf) {
-        return new PlayerAmountPackets(buf.readInt());
+        return new PlayerAmountPackets(buf.readString());
     }
 
     @Override

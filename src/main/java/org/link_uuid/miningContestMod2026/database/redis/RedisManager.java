@@ -27,7 +27,7 @@ public class RedisManager {
             poolConfig.setTestWhileIdle(true);
 
             // 创建连接池
-            jedisPool = new JedisPool(poolConfig, json_init.config.redisHost, json_init.config.redisPort, 2000, json_init.config.redisPassword);
+            jedisPool = new JedisPool(poolConfig, json_init.config.redisHost, json_init.config.redisPort, 2000);
 
             // 测试连接
             try (Jedis jedis = jedisPool.getResource()) {

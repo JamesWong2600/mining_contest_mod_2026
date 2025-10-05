@@ -19,10 +19,7 @@ import net.minecraft.util.Formatting;
 import org.link_uuid.miningContestMod2026.MiningContestMod2026;
 import org.link_uuid.miningContestMod2026.cache.Cacher;
 import org.link_uuid.miningContestMod2026.client.MiningContestMod2026Client;
-import org.link_uuid.miningContestMod2026.packets.MsptPackets;
-import org.link_uuid.miningContestMod2026.packets.PingPackets;
-import org.link_uuid.miningContestMod2026.packets.RadiationPackets;
-import org.link_uuid.miningContestMod2026.packets.SessionPackets;
+import org.link_uuid.miningContestMod2026.packets.*;
 
 import javax.sound.sampled.Line;
 
@@ -37,6 +34,8 @@ public class scorecard_UHD implements HudRenderCallback {
     public static int[] session_score = new int[1];
     public static int[] pings = new int[1];
     public static int[] pings_score = new int[1];
+    public static String[] player_amount = new String[1];
+    public static String[] player_amount_score = new String[1];
     public static int[] mspt = new int[1];
     public static int[] mspt_score = new int[1];
     public static Text[] lines = new Text[10];
@@ -93,6 +92,15 @@ public class scorecard_UHD implements HudRenderCallback {
                 }
         );
 
+        ClientPlayNetworking.registerGlobalReceiver(PlayerAmountPackets.ID,
+                (payload, context) -> {
+                    player_amount[0] = payload.playeramount();
+                    context.client().execute(() -> {
+                        player_amount_score[0] = player_amount[0];
+                    });
+
+                }
+        );
         //player.sendMessage(Text.of("AAA"+distance_score[0]),false);
 
         if(distance[0] == -1){
@@ -140,7 +148,7 @@ public class scorecard_UHD implements HudRenderCallback {
                     (Text)  createLine("你的分數: ", String.valueOf(MiningContestMod2026.mark), " 分", Formatting.GREEN),
 
                     // Player count - label in white, value in aqua, unit in gray
-                    (Text) createLine("玩家數量: ", String.valueOf(playerCount), " 人", Formatting.GREEN),
+                    (Text) createLine("玩家數量: ", String.valueOf(player_amount_score[0]), " 人", Formatting.GREEN),
 
                     (Text) createLine("當前環境輻射值: ", String.format("%.2f", distance_score[0]), " Sv", Formatting.GREEN),
 
@@ -164,7 +172,7 @@ public class scorecard_UHD implements HudRenderCallback {
                     (Text) createLine("目前狀態: ", "請等待比賽開始", "", Formatting.GREEN),
 
                     // Player count - label in white, value in aqua, unit in gray
-                    (Text) createLine("玩家數量: ", String.valueOf(playerCount), " 人", Formatting.GREEN),
+                    (Text) createLine("玩家數量: ", String.valueOf(player_amount_score[0]), " 人", Formatting.GREEN),
                     // Ping - label in white, value in light purple, unit in gray
                     (Text) createLine("ping: ", String.valueOf(pings_score[0]), " ms", getPingColor(pings_score[0])),
 

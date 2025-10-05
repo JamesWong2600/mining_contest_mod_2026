@@ -25,12 +25,12 @@ public class RedisService {
             if (value != null) {
                 return Integer.parseInt(value);
             }
-            return null;
+            return 0;
         } catch (JedisException e) {
-            LOGGER.info("读取服务器玩家数量失败: " + e.getMessage());
+            LOGGER.error("读取服务器玩家数量失败: " + e.getMessage());
             return null;
         } catch (NumberFormatException e) {
-            LOGGER.info("玩家数量数据格式错误: " + e.getMessage());
+            LOGGER.error("玩家数量数据格式错误: " + e.getMessage());
             return null;
         }
     }

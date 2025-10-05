@@ -37,6 +37,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.GenerationStep;
 import org.link_uuid.miningContestMod2026.config.json_init;
 import org.link_uuid.miningContestMod2026.database.redis.RedisManager;
+import org.link_uuid.miningContestMod2026.database.redis.RedisService;
 import org.link_uuid.miningContestMod2026.database.redis.ServerTickHandler;
 import org.link_uuid.miningContestMod2026.event.RadiationHandler;
 import org.link_uuid.miningContestMod2026.event.RadiationHandler_old;
@@ -96,7 +97,9 @@ public class MiningContestMod2026 implements ModInitializer {
     @Override
     public void onInitialize() {
         variable.setSession(1);
+        variable.set_player_amount(1);
         RedisManager.initialize();
+
         json_init.load();
         if (json_init.config.redisEnabled) {
             System.out.println("Configuration loaded: " + json_init.config.redisHost);
@@ -141,9 +144,15 @@ public class MiningContestMod2026 implements ModInitializer {
             Map<UUID, Integer> playerUpdateCounters = new HashMap<>();
 
             ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+                variable.player_amount = server.getCurrentPlayerCount();
+                //System.out.println(player_count);
+                RedisService.saveServerPlayerAmount(json_init.config.server_index,  variable.player_amount);
                 ServerPlayerEntity player = handler.getPlayer();
                 UUID playerId = player.getUuid();
 
+
+                String playeramount = String.valueOf(getServerPlayerAmount(json_init.config.server_index));
+                System.out.println("playeramount is "+playeramount);
                 // 立即发送初始数据包
                 int mspt = getCurrentMspt(server);
                 int ping = getPingSafe(player);
@@ -152,7 +161,7 @@ public class MiningContestMod2026 implements ModInitializer {
                 ServerPlayNetworking.send(player, new MsptPackets(mspt));
                 ServerPlayNetworking.send(player, new PingPackets(ping));
                 ServerPlayNetworking.send(player, new SessionPackets(1));
-
+                ServerPlayNetworking.send(player, new PlayerAmountPackets(playeramount));
                 // 初始化计数器
                 playerUpdateCounters.put(playerId, 0);
 
@@ -165,6 +174,11 @@ public class MiningContestMod2026 implements ModInitializer {
 
             ServerTickEvents.START_SERVER_TICK.register(server -> {
                 if (server.getCurrentPlayerCount() < 1) return;
+
+                variable.player_amount = server.getCurrentPlayerCount();
+                //System.out.println(player_count);
+                RedisService.saveServerPlayerAmount(json_init.config.server_index,  variable.player_amount);
+
 
                 int mspt = getCurrentMspt(server);
 
@@ -179,7 +193,7 @@ public class MiningContestMod2026 implements ModInitializer {
 
                     int playerCounter = playerUpdateCounters.get(playerId) + 1;
                     playerUpdateCounters.put(playerId, playerCounter);
-                    int playeramount = getServerPlayerAmount(1);
+                    String playeramount = String.valueOf(getServerPlayerAmount(json_init.config.server_index));
 
                     if (playerCounter >= 20) {
                         // 正确的发送方式
