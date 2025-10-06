@@ -1,6 +1,0 @@
-{
-  "parent": "block/cube_all",
-  "textures": {
-    "all": "mining-contest-mod-2026:block/uranium_ore"
-  }
-}

@@ -1,0 +1,133 @@
+package org.link_uuid.miningContestMod2026.armor.lead;
+
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroups;
+import net.minecraft.item.ToolMaterial;
+import net.minecraft.item.equipment.ArmorMaterial;
+import net.minecraft.item.equipment.EquipmentAsset;
+import net.minecraft.item.equipment.EquipmentAssetKeys;
+import net.minecraft.item.equipment.EquipmentType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Identifier;
+import org.link_uuid.miningContestMod2026.MiningContestMod2026;
+
+import java.util.Map;
+import java.util.function.Function;
+
+/* public class ModItems {
+           public static final Item ELEMENT_PICKAXE = registerItem("element_pickaxe", new Item(new Item.Settings()));
+
+            private static Item registerItem(String name, Item item) {
+                return Registry.register(Registries.ITEM, Identifier.of(MiningContestMod2026.MOD_ID, name), item);
+            }
+
+            public static void registerModItems() {
+                LOGGER.info(MiningContestMod2026.MOD_ID);
+                ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
+                    entries.add(ELEMENT_PICKAXE);
+                });
+            }
+}
+*/
+public class lead_helmet {
+    public static Item register(String name, Function<Item.Settings, Item> itemFactory, Item.Settings settings) {
+        // Create the item key.
+        RegistryKey<Item> itemKey = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MiningContestMod2026.MOD_ID, name));
+
+        // Create the item instance.
+        Item item = itemFactory.apply(settings.registryKey(itemKey));
+
+        // Register the item.
+        Registry.register(Registries.ITEM, itemKey, item);
+
+        return item;
+    }
+
+    public static final int BASE_DURABILITY = 15;
+    public static final RegistryKey<EquipmentAsset> GUIDITE_ARMOR_MATERIAL_KEY = RegistryKey.of(EquipmentAssetKeys.REGISTRY_KEY, Identifier.of(MiningContestMod2026.MOD_ID, "lead_material"));
+
+    public static final ArmorMaterial INSTANCE = new ArmorMaterial(
+            BASE_DURABILITY,
+            Map.of(
+                    EquipmentType.HELMET, 3,
+                    EquipmentType.CHESTPLATE, 8,
+                    EquipmentType.LEGGINGS, 6,
+                    EquipmentType.BOOTS, 3
+            ),
+            5,
+            SoundEvents.ITEM_ARMOR_EQUIP_IRON,
+            0.0F,
+            0.0F,
+            ToolMaterial.DIAMOND.repairItems(),
+            GUIDITE_ARMOR_MATERIAL_KEY
+    );
+
+
+    public static final Item lead_helmet_item = register(
+            "lead_helmet",
+            Item::new,
+            new Item.Settings().armor(lead_helmet.INSTANCE, EquipmentType.HELMET)
+                    .maxDamage(EquipmentType.HELMET.getMaxDamage(lead_helmet.BASE_DURABILITY))
+    );
+
+    public static final Item lead_chestplate_item = register(
+            "lead_chestplate",
+            Item::new,
+            new Item.Settings().armor(lead_helmet.INSTANCE, EquipmentType.CHESTPLATE)
+                    .maxDamage(EquipmentType.HELMET.getMaxDamage(lead_helmet.BASE_DURABILITY))
+    );
+
+    public static final Item lead_legging_item = register(
+            "lead_legging",
+            Item::new,
+            new Item.Settings().armor(lead_helmet.INSTANCE, EquipmentType.LEGGINGS)
+                    .maxDamage(EquipmentType.HELMET.getMaxDamage(lead_helmet.BASE_DURABILITY))
+    );
+
+    public static final Item lead_boot_item = register(
+            "lead_boot",
+            Item::new,
+            new Item.Settings().armor(lead_helmet.INSTANCE, EquipmentType.BOOTS)
+                    .maxDamage(EquipmentType.HELMET.getMaxDamage(lead_helmet.BASE_DURABILITY))
+    );
+
+    public static void lead_equip_init() {
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT)
+                .register((itemGroup) -> itemGroup.add(lead_helmet.lead_helmet_item));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT)
+                .register((itemGroup) -> itemGroup.add(lead_helmet.lead_chestplate_item));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT)
+                .register((itemGroup) -> itemGroup.add(lead_helmet.lead_legging_item));
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT)
+                .register((itemGroup) -> itemGroup.add(lead_helmet.lead_boot_item));
+    }
+
+}
+
+
+/* public class ModItems {
+    public static Item register(String name, Function<Item.Settings, Item> itemFactory, Item.Settings settings) {
+        // Create identifier
+        Identifier id = Identifier.of(MiningContestMod2026.MOD_ID, name);
+
+        // Create and register item
+        Item item = itemFactory.apply(settings);
+        return Registry.register(Registries.ITEM, id, item);
+    }
+
+    // Simple registration without the complex key setup
+    public static final Item ELEMENT_PICKAXE = register("element_pickaxe",
+            Item::new,
+            new Item.Settings());
+
+    public static void initer() {
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS)
+                .register(entries -> entries.add(ELEMENT_PICKAXE));
+    }
+}
+*/

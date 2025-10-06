@@ -1,0 +1,23 @@
+dependencies {
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    implementation project(":src:common")
+    include(project(":src:common"))
+
+    implementation 'redis.clients:jedis:4.4.0'
+}
+
+loom {
+    runs {
+        server {
+            server()
+            setConfigName("Fabric Server")
+            ideConfigGenerated(true)
+            runDir("run/server")
+        }
+    }
+}
+tasks.register('copyModToLib', Copy) {
+    from remapJar
+    into '../../libs'
+}

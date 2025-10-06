@@ -1,0 +1,16 @@
+{
+  "item.mining_contest_mod_2026.element_pickaxe": "Element Pickaxe",
+  "block.mining_contest_mod_2026.uranium_ore": "Uranium Ore",
+  "block.mining_contest_mod_2026.uranium_deepslate_ore": "Uranium deepslate Ore",
+  "block.mining_contest_mod_2026.lead_deepslate_ore": "Uranium deepslate Ore",
+  "block.mining_contest_mod_2026.iodine_deepslate_ore": "Iodine deepslate Ore",
+  "item.mining_contest_mod_2026.uranium": "Uranium",
+  "item.mining_contest_mod_2026.lead": "Lead",
+  "block.mining_contest_mod_2026.lead_ore": "Uranium Ore",
+  "block.mining_contest_mod_2026.iodine_ore": "iodine Ore",
+  "item.mining_contest_mod_2026.lead_helmet": "Lead helmet",
+  "item.mining_contest_mod_2026.lead_chestplate": "Lead chestplate",
+  "item.mining_contest_mod_2026.lead_legging": "Lead legging",
+  "item.mining_contest_mod_2026.lead_boot": "Lead boot",
+  "death.attack.radiation": "died from radiation!"
+}

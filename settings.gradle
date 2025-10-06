@@ -4,6 +4,14 @@ pluginManagement {
             name = 'Fabric'
             url = 'https://maven.fabricmc.net/'
         }
+        mavenCentral()
         gradlePluginPortal()
     }
 }
+rootProject.name = 'mining_contest_mod_2026'
+
+// 包含子项目
+
+include 'src:client'
+include 'src:common'
+include 'src:server'

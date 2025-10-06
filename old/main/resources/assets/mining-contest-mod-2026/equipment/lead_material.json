@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "mining_contest_mod_2026:lead_3"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "mining_contest_mod_2026:lead_1"
+      }
+    ]
+  }
+}

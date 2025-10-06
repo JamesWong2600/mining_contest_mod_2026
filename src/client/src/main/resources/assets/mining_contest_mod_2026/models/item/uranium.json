@@ -1,0 +1,7 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "mining_contest_mod_2026:item/uranium"
+  }
+}
+

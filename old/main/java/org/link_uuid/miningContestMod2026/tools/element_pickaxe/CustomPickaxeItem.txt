@@ -1,0 +1,11 @@
+package org.link_uuid.miningContestMod2026.tools.element_pickaxe;
+
+import net.minecraft.item.Item;
+
+public class CustomPickaxeItem extends Item {
+
+    public CustomPickaxeItem(Settings settings) {
+        super(settings);
+    }
+
+}
