@@ -4,6 +4,20 @@ dependencies {
     implementation project(":src:common")
     include(project(":src:common"))
 
+
+    implementation 'mysql:mysql-connector-java:8.0.33'
+    include 'mysql:mysql-connector-java:8.0.33'
+
+    // 或者使用新的 group ID
+    implementation 'com.mysql:mysql-connector-j:8.3.0'
+    include 'com.mysql:mysql-connector-j:8.3.0'
+
+    // HikariCP
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+    include 'com.zaxxer:HikariCP:5.0.1'
+
+
+    include 'com.google.protobuf:protobuf-java:3.25.1'
     implementation 'redis.clients:jedis:4.4.0'
 }
 

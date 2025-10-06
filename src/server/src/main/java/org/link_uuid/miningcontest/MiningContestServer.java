@@ -20,7 +20,9 @@ import net.minecraft.world.GameMode;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.link_uuid.miningcontest.data.config.json_init;
+import org.link_uuid.miningcontest.data.event.PlayerJoinEvent;
 import org.link_uuid.miningcontest.data.event.RadiationHandler;
+import org.link_uuid.miningcontest.data.mysqlserver.DatabaseManager;
 import org.link_uuid.miningcontest.data.redis.RedisManager;
 import org.link_uuid.miningcontest.data.redis.RedisService;
 import org.link_uuid.miningcontest.data.redis.ServerTickHandler;
@@ -63,6 +65,18 @@ public class MiningContestServer implements DedicatedServerModInitializer {
     public void onInitializeServer() {
         variable.setSession(1);
         variable.set_player_amount(1);
+        PlayerJoinEvent.register();
+
+        ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+            try {
+                DatabaseManager.initialize();
+                System.out.println("Database initialized successfully");
+            } catch (Exception e) {
+                System.err.println("Failed to initialize database: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+
 
         RedisManager.initialize();
         json_init.load();
@@ -70,25 +84,7 @@ public class MiningContestServer implements DedicatedServerModInitializer {
             System.out.println("Configuration loaded: " + json_init.config.redisHost);
         }
         registerServerEvents();
-        JOIN.register((handler, sender, server) -> {
-            ServerPlayerEntity player = handler.getPlayer();
-            ServerWorld world = server.getWorld(World.OVERWORLD);
-            Set<PositionFlag> flags = Set.of(
-                    PositionFlag.X,           // 更新 X 座標
-                    PositionFlag.Y,           // 更新 Y 座標
-                    PositionFlag.Z,           // 更新 Z 座標
-                    PositionFlag.Y_ROT,       // 更新 Y 軸旋轉（yaw）
-                    PositionFlag.X_ROT        // 更新 X 軸旋轉（pitch）
-            );
-            int X = randomInt(-6, 6);
-            int Z = randomInt(-6, 6);
-            int Y = 265;
-            TeleportTarget target = new TeleportTarget(world, new Vec3d(X, Y, Z),  Vec3d.ZERO, 0f, 0f, Entity::baseTick);
-            //player.teleportTo(world, X, Y ,Z, flags, 0, 0, true);
-            player.changeGameMode(GameMode.ADVENTURE);
-            player.teleportTo(target);
-            player.sendMessage(Text.literal("歡迎！你已被傳送"), false);
-        });
+
         CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(MOD_ID);
         createConfigDirectory();
 

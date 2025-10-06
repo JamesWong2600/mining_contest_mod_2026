@@ -53,6 +53,10 @@ public class set_lobby {
                 String stairFacing = rs.getString("stair_facing");
                 String stairHalf = rs.getString("stair_half");
                 String stairShape = rs.getString("stair_shape");
+                String trapdoorIsOpen = rs.getString("trapdoor_isopen");
+                String trapdoorIsPowered = rs.getString("trapdoor_ispowered");
+                String trapdoorFacing = rs.getString("trapdoor_facing");
+                String trapdoorHalf = rs.getString("trapdoor_half");
                 // 添加到列表
                 //playerList.add(new PlayerData(id, blockType, x, y, z));
                 //System.out.println(id);
@@ -121,6 +125,51 @@ public class set_lobby {
                             // 默認為 straight
                             blockState = blockState.with(shapeProperty, net.minecraft.block.enums.StairShape.STRAIGHT);
                         }
+                    }
+                }
+
+                if (blockState.contains(Properties.HORIZONTAL_FACING) &&
+                        blockState.contains(Properties.OPEN) &&
+                        blockState.contains(Properties.POWERED) &&
+                        blockState.contains(Properties.BLOCK_HALF)) {
+
+                    // 設置 trapdoor facing
+                    if (trapdoorFacing != null && !trapdoorFacing.isEmpty()) {
+                        Direction facing = parseDirection(trapdoorFacing);
+                        if (facing != null && facing.getAxis().isHorizontal()) {
+                            blockState = blockState.with(Properties.HORIZONTAL_FACING, facing);
+                        }
+                    }
+
+                    // 設置 trapdoor open
+                    if (trapdoorIsOpen != null && !trapdoorIsOpen.isEmpty()) {
+                        boolean isOpen = trapdoorIsOpen.equalsIgnoreCase("true") || trapdoorIsOpen.equals("1");
+                        blockState = blockState.with(Properties.OPEN, isOpen);
+                    }
+
+                    // 設置 trapdoor powered
+                    if (trapdoorIsPowered != null && !trapdoorIsPowered.isEmpty()) {
+                        boolean isPowered = trapdoorIsPowered.equalsIgnoreCase("true") || trapdoorIsPowered.equals("1");
+                        blockState = blockState.with(Properties.POWERED, isPowered);
+                    }
+
+                    // 設置 trapdoor half
+                    if (trapdoorHalf != null && !trapdoorHalf.isEmpty() && blockState.contains(Properties.BLOCK_HALF)) {
+                        String halfValue = trapdoorHalf.toLowerCase();
+                        EnumProperty<net.minecraft.block.enums.BlockHalf> halfProperty = Properties.BLOCK_HALF;
+
+                        if (halfValue.equals("top") || halfValue.equals("upper") || halfValue.equals("1")) {
+                            blockState = blockState.with(halfProperty, net.minecraft.block.enums.BlockHalf.TOP);
+                        } else {
+                            blockState = blockState.with(halfProperty, net.minecraft.block.enums.BlockHalf.BOTTOM);
+                        }
+                    }
+                }
+
+                if (blockType.toLowerCase().contains("leaves")) {
+                    // 設置樹葉為永久不消失
+                    if (blockState.contains(Properties.PERSISTENT)) {
+                        blockState = blockState.with(Properties.PERSISTENT, true);
                     }
                 }
 

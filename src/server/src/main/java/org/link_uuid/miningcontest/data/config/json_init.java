@@ -24,6 +24,12 @@ public class json_init {
         public int updateInterval = 20;
         public boolean debugMode = false;
         public int server_index = 1;
+        public String MysqlHost = "192.168.1.118";
+        public int MysqlPort = 3306;
+        public String MysqlDB = "playerdata";
+        public String MysqlUser = "james";
+        public String MysqlPassword = "EPS2367ios2024";
+        public String server_ID = "1";
     }
 
     public static void load() {

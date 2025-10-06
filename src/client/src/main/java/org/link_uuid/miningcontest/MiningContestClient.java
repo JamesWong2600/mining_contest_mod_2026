@@ -46,7 +46,7 @@ public class MiningContestClient implements ClientModInitializer {
         PlayerEntity player = client.player;
         HudRenderCallback.EVENT.register(new text_UHD());
         HudRenderCallback.EVENT.register(new scorecard_UHD());
-
+        HudRenderCallback.EVENT.register(this::onHudRender);
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client_2) -> {
             if (isSingleplayerWorld(client_2)) {
                 blockSingleplayerAccess(client_2);
