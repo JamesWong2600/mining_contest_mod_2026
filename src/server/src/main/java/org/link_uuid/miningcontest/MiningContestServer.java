@@ -1,6 +1,7 @@
 package org.link_uuid.miningcontest;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
@@ -19,6 +20,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
+import org.link_uuid.miningcontest.command.AddAdminCommand;
 import org.link_uuid.miningcontest.data.config.json_init;
 import org.link_uuid.miningcontest.data.event.PlayerJoinEvent;
 import org.link_uuid.miningcontest.data.event.RadiationHandler;
@@ -66,7 +68,9 @@ public class MiningContestServer implements DedicatedServerModInitializer {
         variable.setSession(1);
         variable.set_player_amount(1);
         PlayerJoinEvent.register();
-
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            AddAdminCommand.register(dispatcher);
+        });
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             try {
                 DatabaseManager.initialize();
