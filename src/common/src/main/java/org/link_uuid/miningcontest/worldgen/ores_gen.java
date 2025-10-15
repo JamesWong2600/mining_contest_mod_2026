@@ -8,7 +8,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.gen.GenerationStep;
 
 public class ores_gen {
-    public static void ore_init(){
+    public static void ore_gen_init(){
         // 现在使用已经注册的 placed features
         BiomeModifications.addFeature(
                 BiomeSelectors.foundInOverworld(),
@@ -32,6 +32,38 @@ public class ores_gen {
                 RegistryKey.of(
                         RegistryKeys.PLACED_FEATURE,
                         Identifier.of("mining_contest_mod_2026", "iodine_ore_placed")
+                )
+        );
+        BiomeModifications.addFeature(
+                BiomeSelectors.foundInOverworld(),
+                GenerationStep.Feature.UNDERGROUND_ORES,
+                RegistryKey.of(
+                        RegistryKeys.PLACED_FEATURE,
+                        Identifier.of("mining_contest_mod_2026", "deepslate_diamond_ore_level_three_placed")
+                )
+        );
+        BiomeModifications.addFeature(
+                BiomeSelectors.foundInOverworld(),
+                GenerationStep.Feature.UNDERGROUND_ORES,
+                RegistryKey.of(
+                        RegistryKeys.PLACED_FEATURE,
+                        Identifier.of("mining_contest_mod_2026", "deepslate_diamond_ore_level_two_placed")
+                )
+        );
+        BiomeModifications.addFeature(
+                BiomeSelectors.foundInOverworld(),
+                GenerationStep.Feature.UNDERGROUND_ORES,
+                RegistryKey.of(
+                        RegistryKeys.PLACED_FEATURE,
+                        Identifier.of("mining_contest_mod_2026", "diamond_ore_level_one_placed")
+                )
+        );
+        BiomeModifications.addFeature(
+                BiomeSelectors.foundInOverworld(),
+                GenerationStep.Feature.UNDERGROUND_ORES,
+                RegistryKey.of(
+                        RegistryKeys.PLACED_FEATURE,
+                        Identifier.of("mining_contest_mod_2026", "diamond_ore_level_two_placed")
                 )
         );
     }

@@ -1,0 +1,6 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "mining_contest_mod_2026:block/diamond_ore_level_three"
+  }
+}

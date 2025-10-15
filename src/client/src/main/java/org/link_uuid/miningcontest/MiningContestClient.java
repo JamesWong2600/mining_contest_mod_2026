@@ -82,7 +82,7 @@ public class MiningContestClient implements ClientModInitializer {
                 Thread.sleep(3000); // 等待3秒
                 client_2.execute(() -> {
                     if (client_2.world != null) {
-                        client_2.world.disconnect(Text.literal("Disconnecting from world"));
+                        client_2.world.disconnect();
                     }
                     client_2.disconnect(disconnectScreen,false);
                 });

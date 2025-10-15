@@ -6,14 +6,18 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "mining_contest_mod_2026:iodine"
+          "name": "mining_contest_mod_2026:lead"
         }
       ],
       "conditions": [
         {
           "condition": "minecraft:match_tool",
           "predicate": {
-            "items": "mining_contest_mod_2026:element_pickaxe"
+            "items": [
+              "minecraft:netherite_pickaxe",
+              "minecraft:diamond_pickaxe",
+              "minecraft:iron_pickaxe"
+            ]
           }
         }
       ]

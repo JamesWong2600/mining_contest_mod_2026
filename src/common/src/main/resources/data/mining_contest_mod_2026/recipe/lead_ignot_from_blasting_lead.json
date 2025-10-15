@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "cookingtime": 700,
+  "experience": 0.7,
+  "ingredient": "mining_contest_mod_2026:lead",
+  "result": {
+    "id": "mining_contest_mod_2026:lead_ignot"
+  }
+}

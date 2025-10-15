@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "cookingtime": 100,
+  "experience": 0.7,
+  "ingredient": "mining_contest_mod_2026:iodine",
+  "result": {
+    "id": "mining_contest_mod_2026:iodine_powder"
+  }
+}

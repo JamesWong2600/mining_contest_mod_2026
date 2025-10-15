@@ -36,7 +36,7 @@ public class RadiationHandler {
     public static void onServerTick(MinecraftServer server) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             //if (isNearTnt(player)) {
-            ServerWorld world = player.getWorld();
+            ServerWorld world = (ServerWorld) player.getWorld();
             ItemStack helmet = player.getEquippedStack(EquipmentSlot.HEAD);
             ItemStack chestpalte = player.getEquippedStack(EquipmentSlot.CHEST);
             ItemStack leg = player.getEquippedStack(EquipmentSlot.LEGS);

@@ -9,8 +9,16 @@
   "block.mining_contest_mod_2026.lead_ore": "Uranium Ore",
   "block.mining_contest_mod_2026.iodine_ore": "iodine Ore",
   "item.mining_contest_mod_2026.lead_helmet": "Lead helmet",
+  "item.mining_contest_mod_2026.lead_ignot": "Lead ignot",
+  "item.mining_contest_mod_2026.iodine_powder": "iodine powder",
   "item.mining_contest_mod_2026.lead_chestplate": "Lead chestplate",
   "item.mining_contest_mod_2026.lead_legging": "Lead legging",
   "item.mining_contest_mod_2026.lead_boot": "Lead boot",
-  "death.attack.radiation": "died from radiation!"
+  "death.attack.radiation": "died from radiation!",
+  "block.mining_contest_mod_2026.deepslate_diamond_ore_level_one": "deepslake diamond ore I",
+  "block.mining_contest_mod_2026.deepslate_diamond_ore_level_two": "deepslake diamond ore II",
+  "block.mining_contest_mod_2026.deepslate_diamond_ore_level_three": "deepslake diamond ore III",
+  "block.mining_contest_mod_2026.diamond_ore_level_one": "diamond ore I",
+  "block.mining_contest_mod_2026.diamond_ore_level_two": "diamond ore II",
+  "block.mining_contest_mod_2026.diamond_ore_level_three": "diamond ore III"
 }

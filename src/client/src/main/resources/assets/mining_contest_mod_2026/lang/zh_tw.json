@@ -8,8 +8,16 @@
   "item.mining_contest_mod_2026.lead": "鉛",
   "block.mining_contest_mod_2026.lead_ore": "鉛原礦",
   "block.mining_contest_mod_2026.iodine_ore": "碘原礦",
+  "item.mining_contest_mod_2026.lead_ignot": "鉛錠",
+  "item.mining_contest_mod_2026.iodine_powder": "碘粉末",
   "item.mining_contest_mod_2026.lead_helmet": "鉛頭盔",
   "item.mining_contest_mod_2026.lead_chestplate": "鉛護甲",
   "item.mining_contest_mod_2026.lead_legging": "鉛火腿",
-  "item.mining_contest_mod_2026.lead_boot": "鉛鞋"
+  "item.mining_contest_mod_2026.lead_boot": "鉛鞋",
+  "block.mining_contest_mod_2026.deepslate_diamond_ore_level_one": "一級深板鑽石礦",
+  "block.mining_contest_mod_2026.deepslate_diamond_ore_level_two": "二級深板鑽石礦",
+  "block.mining_contest_mod_2026.deepslate_diamond_ore_level_three": "三級深板鑽石礦",
+  "block.mining_contest_mod_2026.diamond_ore_level_one": "一級鑽石礦",
+  "block.mining_contest_mod_2026.diamond_ore_level_two": "二級鑽石礦",
+  "block.mining_contest_mod_2026.diamond_ore_level_three": "三級鑽石礦"
 }

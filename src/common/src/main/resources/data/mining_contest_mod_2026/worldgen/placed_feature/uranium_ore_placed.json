@@ -13,10 +13,10 @@
       "height": {
         "type": "minecraft:trapezoid",
         "min_inclusive": {
-          "absolute": -64
+          "absolute": 0
         },
         "max_inclusive": {
-          "absolute": 50
+          "absolute": 90
         }
       }
     },
@@ -25,7 +25,7 @@
     },
     {
       "type": "minecraft:rarity_filter",
-      "chance": 1000
+      "chance": 500
     }
   ]
 }

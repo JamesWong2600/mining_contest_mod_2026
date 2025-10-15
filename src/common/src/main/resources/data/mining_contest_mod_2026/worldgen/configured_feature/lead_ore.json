@@ -12,15 +12,6 @@
         "state": {
           "Name": "mining_contest_mod_2026:lead_ore"
         }
-      },
-      {
-        "target": {
-          "predicate_type": "minecraft:tag_match",
-          "tag": "minecraft:deepslate_ore_replaceables"
-        },
-        "state": {
-          "Name": "mining_contest_mod_2026:lead_deepslate_ore"
-        }
       }
     ]
   }
