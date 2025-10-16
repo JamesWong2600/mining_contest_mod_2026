@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public class Cache<K, V> {
     private static final Map<UUID, CacheEntry<Double>> cache = new HashMap<>();
-
+    private static final Map<String, CacheEntry<String>> cooldown_cache = new HashMap<>();
     private static class CacheEntry<V> {
         private final V value;
         private final long expireTime;
@@ -38,6 +38,14 @@ public class Cache<K, V> {
         cache.put(playerId, new CacheEntry<>(distance, expireTime));
     }
 
+    public static void setCooldown(UUID playerId, String value, long ttlSeconds) {
+        long expireTime = System.currentTimeMillis() + (ttlSeconds * 1000);
+        // 使用 playerId + value 作為鍵
+        String key = playerId.toString() + ":" + value;
+        cooldown_cache.put(key, new CacheEntry<>(value, expireTime));
+    }
+
+
     public static double get(UUID playerId) {
         CacheEntry<Double> entry = cache.get(playerId);
         if (entry == null || entry.isExpired()) {
@@ -63,14 +71,17 @@ public class Cache<K, V> {
     }
 
     // 新增：獲取過期時間（返回剩餘毫秒數）
-    public static long getExpireTime(UUID playerId) {
-        CacheEntry<Double> entry = cache.get(playerId);
+    public static int getCooldown(UUID playerId, String value) {
+        // 使用 playerId + value 作為鍵來查找
+        String key = playerId.toString() + ":" + value;
+        CacheEntry<String> entry = cooldown_cache.get(key);
+
         if (entry == null || entry.isExpired()) {
             if (entry != null) {
-                cache.remove(playerId);
+                cooldown_cache.remove(key);  // 修正：應該是 cooldown_cache 不是 cache
             }
             return -1;
         }
-        return entry.getExpireTime() - System.currentTimeMillis();
+        return (int) ((entry.getExpireTime() - System.currentTimeMillis()) / 1000);  // 返回秒數
     }
 }

@@ -128,7 +128,9 @@ public class MiningContestClient implements ClientModInitializer {
 
         if (client.player == null || client.world == null) return;
 
-        if(scorecard_UHD.distance[0] == -1) return;
+        if(scorecard_UHD.distance[0] == -1 || scorecard_UHD.distance[0] == 0.0) {
+            return;
+        };
 
         alpha = (float) (1 / scorecard_UHD.distance[0]);
         if (alpha <= 0) return;

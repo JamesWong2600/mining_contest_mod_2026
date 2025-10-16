@@ -26,7 +26,11 @@ public class scorecard_UHD implements HudRenderCallback {
     public static String[] player_amount_score = new String[1];
     public static int[] mspt = new int[1];
     public static int[] mspt_score = new int[1];
+    public static int[] mode_index = new int[1];
+    public static int[] mode_index_score = new int[1];
+    public static String[] mode_string = new String[1];
     public static Text[] lines = new Text[10];
+
     @Override
     public void onHudRender(DrawContext drawContext, RenderTickCounter tickCounter) {
         MinecraftClient client = MinecraftClient.getInstance();
@@ -89,7 +93,22 @@ public class scorecard_UHD implements HudRenderCallback {
 
                 }
         );
+
+        ClientPlayNetworking.registerGlobalReceiver(PVPModePacket.ID,
+                (payload, context) -> {
+                    mode_index[0] = payload.mode_index();
+                    context.client().execute(() -> {
+                        mode_index_score[0] = mode_index[0];
+                    });
+                }
+        );
         //player.sendMessage(Text.of("AAA"+distance_score[0]),false);
+
+        if (mode_index_score[0] == 0){
+            mode_string[0] = "和平模式";
+        }else{
+            mode_string[0] = "戰鬥模式";
+        }
 
         if(distance[0] == -1){
             distance_score[0] = 0;
@@ -166,6 +185,7 @@ public class scorecard_UHD implements HudRenderCallback {
 
                     // MSPT - label in white, value in red, unit in gray
                     (Text) createLine("mspt: ", String.valueOf(mspt_score[0]), " ms", Formatting.GREEN),
+                    (Text) createLine("大廳PVP模式: ", mode_string[0], "", Formatting.GREEN),
 
             };
         }

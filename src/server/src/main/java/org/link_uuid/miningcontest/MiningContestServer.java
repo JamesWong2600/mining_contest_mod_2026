@@ -2,6 +2,7 @@ package org.link_uuid.miningcontest;
 
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
@@ -21,6 +22,7 @@ import net.minecraft.world.GameMode;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.link_uuid.miningcontest.command.AddAdminCommand;
+import org.link_uuid.miningcontest.command.SwitchPVPMode;
 import org.link_uuid.miningcontest.data.config.json_init;
 import org.link_uuid.miningcontest.data.event.PlayerJoinEvent;
 import org.link_uuid.miningcontest.data.event.RadiationHandler;
@@ -29,6 +31,7 @@ import org.link_uuid.miningcontest.data.redis.RedisManager;
 import org.link_uuid.miningcontest.data.redis.RedisService;
 import org.link_uuid.miningcontest.data.redis.ServerTickHandler;
 import org.link_uuid.miningcontest.data.variable.variable;
+import org.link_uuid.miningcontest.event.PlayerDeadEvent;
 import org.link_uuid.miningcontest.payload.packets.MsptPackets;
 import org.link_uuid.miningcontest.payload.packets.PingPackets;
 import org.link_uuid.miningcontest.payload.packets.PlayerAmountPackets;
@@ -57,19 +60,37 @@ import static org.link_uuid.miningcontest.data.ping_and_mspt.mspt.getCurrentMspt
 import static org.link_uuid.miningcontest.data.ping_and_mspt.ping.getPingSafe;
 import static org.link_uuid.miningcontest.data.redis.RedisService.getServerPlayerAmount;
 import static org.link_uuid.miningcontest.data.sqlite.lobby.set_lobby.lobbyLoad;
+import static org.link_uuid.miningcontest.event.PlayerDeadEvent.instantRespawn;
 
 public class MiningContestServer implements DedicatedServerModInitializer {
 
     public static Path CONFIG_DIR;
     private variable variable = new variable();
     public static int mark = 0;
+
     @Override
     public void onInitializeServer() {
         variable.setSession(1);
         variable.set_player_amount(1);
         PlayerJoinEvent.register();
+        ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
+            if (variable.getSession() == 1) {
+                if (entity instanceof ServerPlayerEntity player) {
+                    System.out.println("Player died, scheduling auto-respawn: " + player.getName().getString());
+
+                    // Schedule instant respawn for next tick
+                    player.getServerWorld().getServer().execute(() -> {
+                        if (player.isDead()) {
+                            instantRespawn(player);
+                        }
+                    });
+                }
+            }
+        });
+
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             AddAdminCommand.register(dispatcher);
+            SwitchPVPMode.register(dispatcher);
         });
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             try {
@@ -120,6 +141,7 @@ public class MiningContestServer implements DedicatedServerModInitializer {
             ServerPlayNetworking.send(player, new PingPackets(ping));
             ServerPlayNetworking.send(player, new SessionPackets(1));
             ServerPlayNetworking.send(player, new PlayerAmountPackets(playeramount));
+
             // 初始化计数器
             playerUpdateCounters.put(playerId, 0);
 

@@ -25,5 +25,9 @@ public class payload_register {
         PlayerAmountPackets.ID,
         PlayerAmountPackets.CODEC
         );
+        PayloadTypeRegistry.playS2C().register(
+        PVPModePacket.ID,
+        PVPModePacket.CODEC
+        );
     }
 }

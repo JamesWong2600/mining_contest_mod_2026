@@ -39,6 +39,30 @@ public class ores_gen {
                 GenerationStep.Feature.UNDERGROUND_ORES,
                 RegistryKey.of(
                         RegistryKeys.PLACED_FEATURE,
+                        Identifier.of("mining_contest_mod_2026", "uranium_deepslate_ore_placed")
+                )
+        );
+        BiomeModifications.addFeature(
+                BiomeSelectors.foundInOverworld(),
+                GenerationStep.Feature.UNDERGROUND_ORES,
+                RegistryKey.of(
+                        RegistryKeys.PLACED_FEATURE,
+                        Identifier.of("mining_contest_mod_2026", "lead_deepslate_ore_placed")
+                )
+        );
+        BiomeModifications.addFeature(
+                BiomeSelectors.foundInOverworld(),
+                GenerationStep.Feature.UNDERGROUND_ORES,
+                RegistryKey.of(
+                        RegistryKeys.PLACED_FEATURE,
+                        Identifier.of("mining_contest_mod_2026", "iodine_deepslate_ore_placed")
+                )
+        );
+        BiomeModifications.addFeature(
+                BiomeSelectors.foundInOverworld(),
+                GenerationStep.Feature.UNDERGROUND_ORES,
+                RegistryKey.of(
+                        RegistryKeys.PLACED_FEATURE,
                         Identifier.of("mining_contest_mod_2026", "deepslate_diamond_ore_level_three_placed")
                 )
         );

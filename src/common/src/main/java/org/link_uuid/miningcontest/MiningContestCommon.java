@@ -24,5 +24,6 @@ public class MiningContestCommon implements ModInitializer {
         PlacementModifierTypeRegister.register();
         LOGGER.info("Mining Contest Mod Common initialized!");
         System.out.println("Mining Contest Mod Common initialized!");
+
     }
 }
