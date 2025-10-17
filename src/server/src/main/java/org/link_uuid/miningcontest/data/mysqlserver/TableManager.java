@@ -10,8 +10,8 @@ public class TableManager {
         String createPlayerTableSQL =
                 "CREATE TABLE IF NOT EXISTS playerdata " +
                 "(id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
-                " player VARCHAR(255), " +
-                " UUID VARCHAR(255), " +
+                " player VARCHAR(255) UNIQUE, " +
+                " UUID VARCHAR(255) UNIQUE, " +
                 " point INTEGER, " +
                 " tp INTEGER, " +
                 " pvppoint INTEGER, " +
@@ -22,8 +22,8 @@ public class TableManager {
         String createAdminTableSQL =
                 "CREATE TABLE IF NOT EXISTS admindata " +
                         "(id INTEGER PRIMARY KEY AUTO_INCREMENT, " +
-                        " player VARCHAR(255), " +
-                        " UUID VARCHAR(255), " +
+                        " player VARCHAR(255) UNIQUE," +
+                        " UUID VARCHAR(255) UNIQUE, " +
                         " permission_level INTEGER) "
                 ;
 

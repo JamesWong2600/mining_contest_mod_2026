@@ -3,6 +3,7 @@ package org.link_uuid.miningcontest;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
@@ -19,6 +20,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.GameRules;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.link_uuid.miningcontest.command.AddAdminCommand;
@@ -54,6 +56,7 @@ import static net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.START_
 import static net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents.*;
 import static net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.*;
 import static net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.*;
+import static org.json.XMLTokener.entity;
 import static org.link_uuid.miningcontest.MiningContestCommon.MOD_ID;
 import static org.link_uuid.miningcontest.blockregister.ores.*;
 import static org.link_uuid.miningcontest.data.ping_and_mspt.mspt.getCurrentMspt;
@@ -61,6 +64,7 @@ import static org.link_uuid.miningcontest.data.ping_and_mspt.ping.getPingSafe;
 import static org.link_uuid.miningcontest.data.redis.RedisService.getServerPlayerAmount;
 import static org.link_uuid.miningcontest.data.sqlite.lobby.set_lobby.lobbyLoad;
 import static org.link_uuid.miningcontest.event.PlayerDeadEvent.instantRespawn;
+import static org.link_uuid.miningcontest.event.PlayerDeadEvent.onRespawnComplete;
 
 public class MiningContestServer implements DedicatedServerModInitializer {
 
@@ -73,12 +77,29 @@ public class MiningContestServer implements DedicatedServerModInitializer {
         variable.setSession(1);
         variable.set_player_amount(1);
         PlayerJoinEvent.register();
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+            if (!alive && variable.getSession() == 1) {
+                System.out.println("自動復活完成: " + newPlayer.getName().getString());
+
+                // 復活後的處理（傳送、訊息等）
+                onRespawnComplete(newPlayer);
+            }
+        });
+
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            // 設定全域 keepInventory 為 true
+            for (ServerWorld world : server.getWorlds()) {
+                world.getGameRules().get(GameRules.KEEP_INVENTORY).set(true, server);
+            }
+            System.out.println("已啟用全域 keepInventory 規則");
+        });
+
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
             if (variable.getSession() == 1) {
                 if (entity instanceof ServerPlayerEntity player) {
-                    System.out.println("Player died, scheduling auto-respawn: " + player.getName().getString());
+                    System.out.println("玩家死亡，準備自動復活: " + player.getName().getString());
 
-                    // Schedule instant respawn for next tick
+                    // 立即執行復活
                     player.getServerWorld().getServer().execute(() -> {
                         if (player.isDead()) {
                             instantRespawn(player);

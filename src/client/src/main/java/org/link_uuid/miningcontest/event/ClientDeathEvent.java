@@ -51,13 +51,13 @@ public class ClientDeathEvent {
             respawnRequested = true;
 
             // 發送復活請求到伺服器
-            if (ClientPlayNetworking.canSend(YourMod.AUTO_RESPAWN_PACKET_ID)) {
+          /*  if (ClientPlayNetworking.canSend(YourMod.AUTO_RESPAWN_PACKET_ID)) {
                 ClientPlayNetworking.send(YourMod.AUTO_RESPAWN_PACKET_ID, PacketByteBufs.create());
                 System.out.println("從死亡畫面發送自動復活請求");
 
                 // 顯示提示
                 client.inGameHud.setOverlayMessage(Text.literal("⚡ 自動復活中..."), false);
-            }
+            }*/
         }
     }
 }

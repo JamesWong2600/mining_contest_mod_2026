@@ -3,6 +3,7 @@ package org.link_uuid.miningcontest.event;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
@@ -27,67 +28,45 @@ public class PlayerDeadEvent {
 
     public static void instantRespawn(ServerPlayerEntity deadPlayer) {
         try {
-            // requestRespawn() returns the NEW player entity
+            MinecraftServer server = deadPlayer.getServer();
             ServerPlayerEntity newPlayer = server.getPlayerManager().respawnPlayer(
-                    deadPlayer,
-                    true,
-                    Entity.RemovalReason.KILLED
+                    deadPlayer, false, Entity.RemovalReason.KILLED
             );
-            System.out.println("Respawn successful for: " + newPlayer.getName().getString());
 
-            // Schedule the teleport for the next tick to ensure player is fully respawned
-            newPlayer.getServerWorld().getServer().execute(() -> {
-                handlePlayerTeleport(newPlayer);
-            });
+            System.out.println("已執行復活: " + newPlayer.getName().getString());
 
         } catch (Exception e) {
-            System.err.println("Instant respawn failed: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("復活失敗: " + e.getMessage());
         }
     }
 
-    private static void handlePlayerTeleport(ServerPlayerEntity player) {
+    public static void onRespawnComplete(ServerPlayerEntity player) {
+        // 這裡處理復活後的邏輯
         String SQL = "SELECT pvpmode FROM playerdata WHERE UUID = ?";
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SQL)) {
 
             stmt.setString(1, player.getUuid().toString());
-            System.out.println("Executing SQL query for UUID: " + player.getUuid().toString());
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     int pvpmode = rs.getInt("pvpmode");
-
-                    // Get the server from the player
-                    if (server == null) {
-                        System.err.println("Server is null");
-                        return;
-                    }
-
-                    ServerWorld world = server.getOverworld();
                     int X = randomInt(-6, 6);
                     int Z = randomInt(-6, 6);
-                    int Y = (pvpmode == 0) ? 255 : 265;
-
-                    // CORRECT teleport method for 1.21.5
+                    int Y = (pvpmode == 0) ? 265 : 255;
+                    ServerWorld world = server.getOverworld();
+                    // 傳送玩家
                     TeleportTarget target = new TeleportTarget(world, new Vec3d(X, Y, Z), Vec3d.ZERO, 0f, 0f, Entity::baseTick);
                     player.teleportTo(target);
+
                     player.sendMessage(Text.literal("歡迎！你已被傳送"), false);
                     player.playSound(SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
-
-                    System.out.println("Teleported player to: " + X + ", " + Y + ", " + Z);
-                } else {
-                    System.out.println("No player data found for UUID: " + player.getUuid());
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (Exception e) {
-            System.err.println("Teleport failed: " + e.getMessage());
-            e.printStackTrace();
         }
     }
-
     // Helper method for random numbers
     private static int randomInt(int min, int max) {
         return min + (int) (Math.random() * ((max - min) + 1));
