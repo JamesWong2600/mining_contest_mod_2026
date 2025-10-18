@@ -1,0 +1,170 @@
+package org.link_uuid.miningcontest.event;
+
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import org.link_uuid.miningcontest.data.mysqlserver.DatabaseManager;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static org.link_uuid.miningcontest.blockregister.ores.*;
+
+public class BlockBreakGetScore {
+
+    public static void handleOreMining(PlayerEntity player, BlockPos pos, BlockState state) {
+        // 處理鈾礦
+        if (state.getBlock().equals(URANIUM_ORE) || state.getBlock().equals(URANIUM_DEEPSLATE_ORE)) {
+            giveOreReward(player, pos, "鈾原礦", 500, 600);
+        }
+        // 處理鉛礦
+        else if (state.getBlock().equals(LEAD_ORE) || state.getBlock().equals(LEAD_DEEPSLATE_ORE)) {
+            giveOreReward(player, pos, "鉛原礦", 15, 20);
+        }
+        // 處理碘礦
+        else if (state.getBlock().equals(IODINE_ORE) || state.getBlock().equals(IODINE_DEEPSLATE_ORE)) {
+            giveOreReward(player, pos, "碘原礦", 10, 15);
+        }
+        else if (state.getBlock().equals(DIAMOND_ORE_LEVEL_ONE)) {
+            giveOreReward(player, pos, "鑽石原礦I", 5, 10);
+        }
+        else if (state.getBlock().equals(DIAMOND_ORE_LEVEL_TWO) || state.getBlock().equals(DEEPSLATE_DIAMOND_ORE_LEVEL_TWO)) {
+            giveOreReward(player, pos, "鑽石原礦II", 20, 35);
+        }
+        else if (state.getBlock().equals(DEEPSLATE_DIAMOND_ORE_LEVEL_THREE)) {
+            giveOreReward(player, pos, "鑽石原礦III", 70, 85);
+        }
+        else if (state.getBlock().equals(Blocks.GOLD_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_GOLD_ORE)  ) {
+            giveOreReward(player, pos, "金原礦", 8, 12);
+        }
+        else if (state.getBlock().equals(Blocks.IRON_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_IRON_ORE)) {
+            giveOreReward(player, pos, "鐵原礦", 1, 2);
+        }
+        else if (state.getBlock().equals(Blocks.REDSTONE_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_REDSTONE_ORE)) {
+            giveOreReward(player, pos, "紅石礦", 6, 10);
+        }
+        else if (state.getBlock().equals(Blocks.LAPIS_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_LAPIS_ORE)) {
+            giveOreReward(player, pos, "青金石礦", 1, 2);
+        }
+        else if (state.getBlock().equals(Blocks.EMERALD_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_EMERALD_ORE)) {
+            giveOreReward(player, pos, "綠寶石礦", 300, 380);
+        }
+    }
+
+    private static void giveOreReward(PlayerEntity player, BlockPos pos, String oreName, int minScore, int maxScore) {
+        // 生成隨機分數
+        int baseScore = getRandomScore(minScore, maxScore);
+        boolean isCritical = isCriticalHit(); // 檢查是否暴擊
+
+        int finalScore = baseScore;
+        Formatting textColor = Formatting.GREEN;
+        String message = oreName + "+" + baseScore + "分";
+
+        // 處理暴擊
+        if (isCritical) {
+            finalScore = baseScore * 2; // 雙倍分數
+            textColor = Formatting.GOLD; // 金色顯示
+            message = "✨ " + oreName + " 暴擊！+" + finalScore + "分 ✨";
+
+            // 播放暴擊音效
+            playCriticalSound(player, pos);
+
+            // 暴擊粒子效果
+            spawnCriticalParticles(player);
+        } else {
+            // 普通音效
+            playSound(player, pos);
+        }
+
+        // 發送消息
+        player.sendMessage(Text.literal(message).formatted(textColor), false);
+
+        // 增加分數
+        String sql = "UPDATE playerdata SET point = point + ? WHERE uuid = ?";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, finalScore);
+            stmt.setString(2, String.valueOf(player.getUuid()));
+
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Database insert affected " + rowsAffected + " rows");
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 檢查是否暴擊（5% 概率）
+    private static boolean isCriticalHit() {
+        return ThreadLocalRandom.current().nextDouble(100) < 5.0; // 5% 概率
+    }
+
+    // 生成隨機分數
+    private static int getRandomScore(int min, int max) {
+        return ThreadLocalRandom.current().nextInt(min, max + 1);
+    }
+
+    // 暴擊音效
+    private static void playCriticalSound(PlayerEntity player, BlockPos pos) {
+        player.getWorld().playSound(
+                null,
+                pos,
+                SoundEvents.ENTITY_PLAYER_LEVELUP, // 升級音效
+                SoundCategory.PLAYERS,
+                1.0f,
+                1.2f // 提高音調
+        );
+    }
+
+    // 普通音效
+    private static void playSound(PlayerEntity player, BlockPos pos) {
+        player.getWorld().playSound(
+                null,
+                pos,
+                SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP,
+                SoundCategory.PLAYERS,
+                1.0f,
+                1.0f
+        );
+    }
+
+    // 暴擊粒子效果
+    private static void spawnCriticalParticles(PlayerEntity player) {
+        World world = player.getWorld();
+        if (world instanceof ServerWorld) {
+            ServerWorld serverWorld = (ServerWorld) world;
+
+            // 生成金色粒子效果
+            serverWorld.spawnParticles(
+                    ParticleTypes.END_ROD,
+                    player.getX(), player.getY() + 1, player.getZ(),
+                    15,  // 數量
+                    0.5, 0.5, 0.5,  // 擴散範圍
+                    0.1  // 速度
+            );
+
+            serverWorld.spawnParticles(
+                    ParticleTypes.FIREWORK,
+                    player.getX(), player.getY() + 1.5, player.getZ(),
+                    10,  // 數量
+                    0.3, 0.3, 0.3,  // 擴散範圍
+                    0.2  // 速度
+            );
+        }
+    }
+}

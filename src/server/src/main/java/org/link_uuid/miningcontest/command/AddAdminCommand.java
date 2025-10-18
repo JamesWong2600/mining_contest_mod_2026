@@ -20,11 +20,13 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.server.command.CommandManager.*;
+import static org.link_uuid.miningcontest.server_init.server_init.server;
 
 public class AddAdminCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -137,11 +139,36 @@ public class AddAdminCommand {
         System.out.println("Adding admin: " + playerName + " with level: " + permissionLevel);
 
         // Fetch UUID
-        String uuid = fetchPlayerUUID(playerName);
-        if (uuid == null) {
-            source.sendMessage(Text.literal("§c找不到玩家: " + playerName));
-            return 0;
+        boolean onlineMode = server.isOnlineMode();
+        UUID uuid;
+        if (onlineMode) {
+            // 先嘗試從外部 API 獲取 UUID
+            String fetchedUUID = fetchPlayerUUID(playerName);
+            if (fetchedUUID != null && !fetchedUUID.isEmpty()) {
+                try {
+                    uuid = UUID.fromString(fetchedUUID);
+                    System.out.println("✅ 從 API 獲取 UUID: " + uuid);
+                } catch (IllegalArgumentException e) {
+                    System.out.println("⚠️ API 返回的 UUID 格式錯誤: " + fetchedUUID);
+                    uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + playerName).getBytes(StandardCharsets.UTF_8)); // 使用玩家的 UUID 作為備用
+                }
+            } else {
+                // API 返回 null 或空字串
+                uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + playerName).getBytes(StandardCharsets.UTF_8));
+                System.out.println("⚠️ 無法從 API 獲取 UUID，使用玩家 UUID: " + uuid);
+            }
+        } else {
+            // 離線模式直接使用玩家的 UUID
+            uuid = UUID.nameUUIDFromBytes(("OfflinePlayer:" + playerName).getBytes(StandardCharsets.UTF_8));
+            System.out.println("🌐 離線模式使用玩家 UUID: " + uuid);
         }
+
+
+       //String uuid = fetchPlayerUUID(playerName);
+        //if (uuid == null) {
+        //    source.sendMessage(Text.literal("§c找不到玩家: " + playerName));
+        //    return 0;
+        //}
 
         // Insert into database
         try (Connection conn = DatabaseManager.getConnection();
@@ -149,7 +176,7 @@ public class AddAdminCommand {
                      "INSERT INTO admindata (player, UUID, permission_level) VALUES (?, ?, ?)")) {
 
             stmt.setString(1, playerName);
-            stmt.setString(2, uuid);
+            stmt.setString(2, String.valueOf(uuid));
             stmt.setInt(3, permissionLevel);
 
             int rowsAffected = stmt.executeUpdate();

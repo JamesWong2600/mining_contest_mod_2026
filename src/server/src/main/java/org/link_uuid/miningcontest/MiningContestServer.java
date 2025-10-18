@@ -24,20 +24,19 @@ import net.minecraft.world.GameRules;
 import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import org.link_uuid.miningcontest.command.AddAdminCommand;
+import org.link_uuid.miningcontest.command.StartGame;
 import org.link_uuid.miningcontest.command.SwitchPVPMode;
 import org.link_uuid.miningcontest.data.config.json_init;
 import org.link_uuid.miningcontest.data.event.PlayerJoinEvent;
 import org.link_uuid.miningcontest.data.event.RadiationHandler;
+import org.link_uuid.miningcontest.data.event.timer.countdown;
 import org.link_uuid.miningcontest.data.mysqlserver.DatabaseManager;
 import org.link_uuid.miningcontest.data.redis.RedisManager;
 import org.link_uuid.miningcontest.data.redis.RedisService;
 import org.link_uuid.miningcontest.data.redis.ServerTickHandler;
 import org.link_uuid.miningcontest.data.variable.variable;
 import org.link_uuid.miningcontest.event.PlayerDeadEvent;
-import org.link_uuid.miningcontest.payload.packets.MsptPackets;
-import org.link_uuid.miningcontest.payload.packets.PingPackets;
-import org.link_uuid.miningcontest.payload.packets.PlayerAmountPackets;
-import org.link_uuid.miningcontest.payload.packets.SessionPackets;
+import org.link_uuid.miningcontest.payload.packets.*;
 import org.link_uuid.miningcontest.server_init.server_init;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import java.io.IOException;
@@ -59,10 +58,13 @@ import static net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.*
 import static org.json.XMLTokener.entity;
 import static org.link_uuid.miningcontest.MiningContestCommon.MOD_ID;
 import static org.link_uuid.miningcontest.blockregister.ores.*;
+import static org.link_uuid.miningcontest.data.cache.Cache.get_server;
+import static org.link_uuid.miningcontest.data.cache.Cache.put_server;
 import static org.link_uuid.miningcontest.data.ping_and_mspt.mspt.getCurrentMspt;
 import static org.link_uuid.miningcontest.data.ping_and_mspt.ping.getPingSafe;
 import static org.link_uuid.miningcontest.data.redis.RedisService.getServerPlayerAmount;
 import static org.link_uuid.miningcontest.data.sqlite.lobby.set_lobby.lobbyLoad;
+import static org.link_uuid.miningcontest.event.BlockBreakGetScore.handleOreMining;
 import static org.link_uuid.miningcontest.event.PlayerDeadEvent.instantRespawn;
 import static org.link_uuid.miningcontest.event.PlayerDeadEvent.onRespawnComplete;
 
@@ -74,11 +76,9 @@ public class MiningContestServer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        variable.setSession(1);
-        variable.set_player_amount(1);
         PlayerJoinEvent.register();
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
-            if (!alive && variable.getSession() == 1) {
+            if (!alive && get_server("session") == 1) {
                 System.out.println("自動復活完成: " + newPlayer.getName().getString());
 
                 // 復活後的處理（傳送、訊息等）
@@ -86,16 +86,38 @@ public class MiningContestServer implements DedicatedServerModInitializer {
             }
         });
 
+        PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
+            handleOreMining(player, pos, state);
+        });
+
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            countdown.tick(); // Update timer every tick
+        });
+
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            StartGame.register(dispatcher); // This registers the /start command
+        });
+
+        // Register tick event for countdown
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            StartGame.tick(); // This handles the countdown timing
+        });
+
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             // 設定全域 keepInventory 為 true
+            put_server("session",1);
+            put_server("player_amount",1);
+            put_server("time",3600);
             for (ServerWorld world : server.getWorlds()) {
                 world.getGameRules().get(GameRules.KEEP_INVENTORY).set(true, server);
+                world.getGameRules().get(GameRules.DO_IMMEDIATE_RESPAWN).set(true, server);
             }
+
             System.out.println("已啟用全域 keepInventory 規則");
         });
 
         ServerLivingEntityEvents.AFTER_DEATH.register((entity, damageSource) -> {
-            if (variable.getSession() == 1) {
+            if (get_server("session") == 1) {
                 if (entity instanceof ServerPlayerEntity player) {
                     System.out.println("玩家死亡，準備自動復活: " + player.getName().getString());
 
@@ -160,8 +182,10 @@ public class MiningContestServer implements DedicatedServerModInitializer {
             // 正确的发送方式 - 使用 ServerPlayerEntity 而不是 ServerPlayNetworkHandler
             ServerPlayNetworking.send(player, new MsptPackets(mspt));
             ServerPlayNetworking.send(player, new PingPackets(ping));
-            ServerPlayNetworking.send(player, new SessionPackets(1));
+            ServerPlayNetworking.send(player, new SessionPackets(get_server("session")));
             ServerPlayNetworking.send(player, new PlayerAmountPackets(playeramount));
+
+
 
             // 初始化计数器
             playerUpdateCounters.put(playerId, 0);
@@ -201,7 +225,7 @@ public class MiningContestServer implements DedicatedServerModInitializer {
                     ServerPlayNetworking.send(player, new MsptPackets(mspt));
                     int ping = getPingSafe(player);
                     ServerPlayNetworking.send(player, new PingPackets(ping));
-                    ServerPlayNetworking.send(player, new SessionPackets(1));
+                    ServerPlayNetworking.send(player, new SessionPackets(get_server("session")));
                     ServerPlayNetworking.send(player, new PlayerAmountPackets(playeramount));
                     playerUpdateCounters.put(playerId, 0);
                 }

@@ -70,7 +70,7 @@ public class RadiationHandler {
 
 // 建 packet 並發送
 
-                System.out.println(nearestDistance);
+                //System.out.println(nearestDistance);
                 ServerPlayNetworking.send(player, new RadiationPackets(nearestDistance));
 
 

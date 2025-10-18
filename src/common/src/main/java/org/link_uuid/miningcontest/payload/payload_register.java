@@ -29,5 +29,13 @@ public class payload_register {
         PVPModePacket.ID,
         PVPModePacket.CODEC
         );
+        PayloadTypeRegistry.playS2C().register(
+        TimerPackets.ID,
+        TimerPackets.CODEC
+        );
+        PayloadTypeRegistry.playS2C().register(
+        ScorePackets.ID,
+        ScorePackets.CODEC
+        );
     }
 }

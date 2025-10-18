@@ -1,12 +1,12 @@
 package org.link_uuid.miningcontest;
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.MessageScreen;
+import net.minecraft.client.gui.screen.ChatScreen;
+import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,12 +18,11 @@ import org.cef.browser.CefBrowser;
 import org.link_uuid.miningcontest.HUD.scorecard_UHD;
 import org.link_uuid.miningcontest.HUD.text_UHD;
 
-import javax.swing.text.JTextComponent;
-
-import static com.mojang.authlib.minecraft.client.MinecraftClient.*;
 import static org.link_uuid.miningcontest.items.armor.lead_armor.*;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+
+import java.lang.reflect.Field;
 
 
 public class MiningContestClient implements ClientModInitializer {
@@ -39,14 +38,21 @@ public class MiningContestClient implements ClientModInitializer {
     //public static double distance;
     public String s = "";
     public double distance_value;
+    private static boolean deathScreenClosed = false;
+    private static int tickCounter = 0;
+
+    private static boolean screenCleared = false;
     @Override
     public void onInitializeClient() {
-        MinecraftClient client = MinecraftClient.getInstance();
+        //MinecraftClient client = MinecraftClient.getInstance();
         System.out.println("Mining Contest Client Mod 初始化完成!");
-        PlayerEntity player = client.player;
+        //PlayerEntity player = client.player;
         HudRenderCallback.EVENT.register(new text_UHD());
         HudRenderCallback.EVENT.register(new scorecard_UHD());
         HudRenderCallback.EVENT.register(this::onHudRender);
+
+
+
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client_2) -> {
             if (isSingleplayerWorld(client_2)) {
                 blockSingleplayerAccess(client_2);

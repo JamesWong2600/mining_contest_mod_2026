@@ -1,18 +1,18 @@
 package org.link_uuid.miningcontest.event;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.network.packet.s2c.play.CloseScreenS2CPacket;
-import net.minecraft.network.packet.s2c.play.PositionFlag;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
@@ -21,35 +21,76 @@ import net.minecraft.world.TeleportTarget;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkStatus;
 import org.link_uuid.miningcontest.data.mysqlserver.DatabaseManager;
-import org.link_uuid.miningcontest.data.variable.variable;
-import org.link_uuid.miningcontest.payload.packets.PVPModePacket;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
-import static org.link_uuid.miningcontest.MiningContestServer.randomInt;
 import static org.link_uuid.miningcontest.data.cache.Cache.get_server;
-import static org.link_uuid.miningcontest.data.cache.Cache.setCooldown;
 import static org.link_uuid.miningcontest.server_init.server_init.server;
 
-public class PlayerDeadEvent {
+public class player_damage_event {
+    private static final Set<UUID> protectedPlayers = new HashSet<>();
 
-    public static void instantRespawn(ServerPlayerEntity deadPlayer) {
-        try {
-            ServerPlayerEntity oldPlayer = deadPlayer;
-            deadPlayer.networkHandler.sendPacket(new CloseScreenS2CPacket(1));
-            ServerPlayerEntity newPlayer = server.getPlayerManager().respawnPlayer(oldPlayer, false, Entity.RemovalReason.KILLED);
-            System.out.println("已執行復活: " + newPlayer.getName().getString());
-
-        } catch (Exception e) {
-            System.err.println("復活失敗: " + e.getMessage());
+    public static void setPlayerProtected(ServerPlayerEntity player, boolean protect) {
+        if (protect) {
+            protectedPlayers.add(player.getUuid());
+        } else {
+            protectedPlayers.remove(player.getUuid());
         }
     }
 
-    public static void onRespawnComplete(ServerPlayerEntity player) {
+    public static boolean isPlayerProtected(ServerPlayerEntity player) {
+        return protectedPlayers.contains(player.getUuid());
+    }
+
+    public static void triggerImmortality(ServerPlayerEntity player) {
+        // 確保玩家還活著
+        if (!player.isAlive()) return;
+
+        // 補滿血量
+        player.setHealth(player.getMaxHealth());
+
+        // 清除負面效果
+        player.clearStatusEffects();
+
+        // 添加保護效果
+        player.addStatusEffect(new StatusEffectInstance(
+                StatusEffects.ABSORPTION, 200, 1, false, false, true
+        ));
+
+        player.addStatusEffect(new StatusEffectInstance(
+                StatusEffects.REGENERATION, 100, 1, false, false, true
+        ));
+
+        player.addStatusEffect(new StatusEffectInstance(
+                StatusEffects.GLOWING, 60, 0, false, false, true
+        ));
+
+        // 發送消息
+        player.sendMessage(Text.literal("§6✨ 不死之身保護了你！"), false);
+
+        // 發送標題
+
+        // 播放音效
+        player.playSound(SoundEvents.ENTITY_PLAYER_LEVELUP,
+                 1.0f, 1.0f);
+
+        // 生成粒子效果
+
+        // 執行自定義邏輯
+        onImmortalityTriggered(player);
+    }
+
+
+    private static void onImmortalityTriggered(ServerPlayerEntity player) {
+        // 這裡添加你的自定義邏輯
+        System.out.println("玩家 " + player.getName().getString() + " 觸發了不死效果");
+
         if (get_server("session") == 1) {
             String SQL = "SELECT pvpmode FROM playerdata WHERE UUID = ?";
             try (Connection conn = DatabaseManager.getConnection();
@@ -75,7 +116,8 @@ public class PlayerDeadEvent {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }else{
+        }
+        else{
             player.sendMessage(Text.literal("§6遊戲開始!"));
             ServerWorld world = server.getOverworld();
             int X = randomInt(-5000, 5000);
@@ -84,17 +126,9 @@ public class PlayerDeadEvent {
             TeleportTarget target = new TeleportTarget(world, new Vec3d(X, Y, Z), Vec3d.ZERO, 0f, 0f, Entity::baseTick);
             player.changeGameMode(GameMode.SURVIVAL);
             player.teleportTo(target);
-            player.addStatusEffect(new StatusEffectInstance(
-                    StatusEffects.NIGHT_VISION,  // 夜視效果
-                    999999999,                       // 持續時間（ticks）：6000 = 5分鐘
-                    0,                          // 等級：0 = 等級1
-                    false,                      // 是否顯示粒子效果
-                    false,                      // 是否顯示圖標
-                    true                        // 是否來自信標（可選）
-            ));
         }
-        // 這裡處理復活後的邏輯
     }
+
     private static int getSafeYWithValidation(ServerWorld world, int x, int z) {
         try {
             // 先強制生成這個區域的地形
@@ -177,7 +211,6 @@ public class PlayerDeadEvent {
                 world.getBlockState(headPos).isAir();
     }
 
-    // Helper method for random numbers
     private static int randomInt(int min, int max) {
         return min + (int) (Math.random() * ((max - min) + 1));
     }

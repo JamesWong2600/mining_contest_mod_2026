@@ -6,6 +6,7 @@ import java.util.UUID;
 public class Cache<K, V> {
     private static final Map<UUID, CacheEntry<Double>> cache = new HashMap<>();
     private static final Map<String, CacheEntry<String>> cooldown_cache = new HashMap<>();
+    private static final Map<String, CacheEntry<Integer>> server_task_cache = new HashMap<>();
     private static class CacheEntry<V> {
         private final V value;
         private final long expireTime;
@@ -26,6 +27,19 @@ public class Cache<K, V> {
         public long getExpireTime() {
             return expireTime;
         }
+    }
+
+    public static void put_server(String task_variable, int distance) { // 改為 int
+        server_task_cache.put(task_variable, new CacheEntry<>(distance, Long.MAX_VALUE));
+    }
+
+    // 同時添加對應的 get 方法
+    public static int get_server(String task_variable) {
+        CacheEntry<Integer> entry = server_task_cache.get(task_variable);
+        if (entry == null) {
+            return -1; // 或者你想要的默認值
+        }
+        return entry.getValue();
     }
 
     public static void put(UUID playerId, double distance) {

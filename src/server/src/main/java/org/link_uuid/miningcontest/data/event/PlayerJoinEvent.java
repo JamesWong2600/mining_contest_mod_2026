@@ -1,5 +1,7 @@
 package org.link_uuid.miningcontest.data.event;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.client.sound.Sound;
 import net.minecraft.entity.Entity;
@@ -17,6 +19,10 @@ import net.minecraft.world.World;
 import org.link_uuid.miningcontest.data.config.json_init;
 import org.link_uuid.miningcontest.data.mysqlserver.DatabaseManager;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -40,7 +46,30 @@ public class PlayerJoinEvent {
         }
     private static void onPlayerJoin(ServerPlayerEntity player, MinecraftServer server) {
         String playerName = player.getGameProfile().getName();
-        UUID uuid = player.getGameProfile().getId();
+        boolean onlineMode = server.isOnlineMode();
+        UUID uuid;
+        if (onlineMode) {
+            // 先嘗試從外部 API 獲取 UUID
+            String fetchedUUID = fetchPlayerUUID(playerName);
+            if (fetchedUUID != null && !fetchedUUID.isEmpty()) {
+                try {
+                    uuid = UUID.fromString(fetchedUUID);
+                    System.out.println("✅ 從 API 獲取 UUID: " + uuid);
+                } catch (IllegalArgumentException e) {
+                    System.out.println("⚠️ API 返回的 UUID 格式錯誤: " + fetchedUUID);
+                    uuid = player.getUuid(); // 使用玩家的 UUID 作為備用
+                }
+            } else {
+                // API 返回 null 或空字串
+                uuid = player.getUuid();
+                System.out.println("⚠️ 無法從 API 獲取 UUID，使用玩家 UUID: " + uuid);
+            }
+        } else {
+            // 離線模式直接使用玩家的 UUID
+            uuid = player.getUuid();
+            System.out.println("🌐 離線模式使用玩家 UUID: " + uuid);
+        }
+        // FIX LATER ()
         System.out.println("玩家 " + playerName + " 加入了遊戲");
 
         // 先執行傳送邏輯
@@ -74,31 +103,44 @@ public class PlayerJoinEvent {
             stmt_player.setString(1, uuid.toString());
 
             // 1. 先檢查是否為管理員
-            boolean isAdmin = false;
-            boolean isNewPlayer = false;
+            boolean[] isAdmin = new boolean[1];
+            boolean[] isNewPlayer = new boolean[1];
+            isAdmin[0] = false;
+            isNewPlayer[0] = false;
 
             try (ResultSet rs_admin = stmt_admin.executeQuery()) {
-                isAdmin = rs_admin.next();
+                if (rs_admin.next()) {
+                    isAdmin[0] = true;
+                    System.out.println("管理員 UUID: " + rs_admin.getString("UUID"));
+                } else {
+                    System.out.println("不是管理員: " + playerName);
+                }
             }
 
             // 2. 檢查是否為新玩家
             try (ResultSet rs_player = stmt_player.executeQuery()) {
-                isNewPlayer = !rs_player.next(); // 如果沒有結果，就是新玩家
+                if (!rs_player.next()) {
+                    isNewPlayer[0] = true; // 如果沒有結果，就是新玩家
+                    System.out.println("新玩家: " + playerName);
+                } else {
+                    System.out.println("回歸玩家 UUID: " + rs_player.getString("UUID"));
+                }
             }
 
             // 3. 執行插入/更新操作
-            int affectedRows = stmt.executeUpdate();
 
-            System.out.println((isAdmin ? "✅ 管理員" : "❌ 普通玩家") + ": " + playerName);
-            System.out.println((isNewPlayer ? "🆕 新玩家" : "🔁 回歸玩家") + ", 受影響行數: " + affectedRows);
+            System.out.println((isAdmin[0] ? "✅ 管理員" : "❌ 普通玩家") + ": " + playerName);
+
 
             // 4. 根據玩家類型執行不同邏輯
-            if (isAdmin) {
+            if (isAdmin[0]) {
                 // 管理員邏輯
-                handleAdminPlayer(player, world, isNewPlayer);
+                handleAdminPlayer(player, world, isNewPlayer[0]);
             } else {
                 // 普通玩家邏輯
-                handleNormalPlayer(player, world, isNewPlayer);
+                int affectedRows = stmt.executeUpdate();
+                System.out.println((isNewPlayer[0] ? "🆕 新玩家" : "🔁 回歸玩家") + ", 受影響行數: " + affectedRows);
+                handleNormalPlayer(player, world, isNewPlayer[0]);
             }
 
         } catch (SQLException e) {
@@ -152,6 +194,57 @@ public class PlayerJoinEvent {
             player.sendMessage(Text.literal("👋 歡迎回來 " + player.getName().getString() + "！"), false);
             System.out.println("🔄 現有玩家資料已更新: " + player.getName().getString());
         }
+    }
+    private static String fetchPlayerUUID(String playerName) {
+        try {
+            URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + playerName);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == 200) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                // Parse JSON response
+                JsonObject json = JsonParser.parseString(response.toString()).getAsJsonObject();
+                String uuidWithoutDashes = json.get("id").getAsString();
+
+                // Convert to proper UUID format
+                return formatUUID(uuidWithoutDashes);
+
+            } else if (responseCode == 404) {
+                // Player not found
+                return null;
+            } else {
+                // Other HTTP error
+                throw new RuntimeException("HTTP " + responseCode);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to fetch UUID: " + e.getMessage(), e);
+        }
+    }
+
+    private static String formatUUID(String uuidWithoutDashes) {
+        // Convert from "f0b6e6a6c0a84f6e8b6a6c0a84f6e8b6" to "f0b6e6a6-c0a8-4f6e-8b6a-6c0a84f6e8b6"
+        if (uuidWithoutDashes.length() != 32) {
+            return uuidWithoutDashes;
+        }
+
+        return uuidWithoutDashes.substring(0, 8) + "-" +
+                uuidWithoutDashes.substring(8, 12) + "-" +
+                uuidWithoutDashes.substring(12, 16) + "-" +
+                uuidWithoutDashes.substring(16, 20) + "-" +
+                uuidWithoutDashes.substring(20, 32);
     }
 
        /* private static void onPlayerJoin(ServerPlayerEntity player, MinecraftServer server) {

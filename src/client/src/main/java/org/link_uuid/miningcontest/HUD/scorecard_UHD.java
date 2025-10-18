@@ -28,6 +28,10 @@ public class scorecard_UHD implements HudRenderCallback {
     public static int[] mspt_score = new int[1];
     public static int[] mode_index = new int[1];
     public static int[] mode_index_score = new int[1];
+    public static int[] timer_index = new int[1];
+    public static int[] timer_index_score = new int[1];
+    public static int[] score = new int[1];
+    public static int[] score_score = new int[1];
     public static String[] mode_string = new String[1];
     public static Text[] lines = new Text[10];
 
@@ -102,6 +106,24 @@ public class scorecard_UHD implements HudRenderCallback {
                     });
                 }
         );
+
+        ClientPlayNetworking.registerGlobalReceiver(TimerPackets.ID,
+                (payload, context) -> {
+                    timer_index[0] = payload.timer();
+                    context.client().execute(() -> {
+                        timer_index_score[0] = timer_index[0];
+                    });
+                }
+        );
+
+        ClientPlayNetworking.registerGlobalReceiver(ScorePackets.ID,
+                (payload, context) -> {
+                    score[0] = payload.score();
+                    context.client().execute(() -> {
+                        score_score[0] = score[0];
+                    });
+                }
+        );
         //player.sendMessage(Text.of("AAA"+distance_score[0]),false);
 
         if (mode_index_score[0] == 0){
@@ -149,10 +171,10 @@ public class scorecard_UHD implements HudRenderCallback {
                     (Text) Text.literal("麥塊新春挖礦大賽2026").formatted(Formatting.GOLD, Formatting.BOLD),
 
                     // Remaining time - label in white, value in green, unit in gray
-                    (Text) createLine("剩餘時間: ", String.valueOf(remainingTime), " s", Formatting.GREEN),
+                    (Text) createLine("剩餘時間: ", String.valueOf(timer_index_score[0]), " s", Formatting.GREEN),
 
                     // Your score - label in white, value in yellow, unit in gray
-                    (Text)  createLine("你的分數: ", String.valueOf(0), " 分", Formatting.GREEN),
+                    (Text)  createLine("你的分數: ", String.valueOf(score_score[0]), " 分", Formatting.GREEN),
 
                     // Player count - label in white, value in aqua, unit in gray
                     (Text) createLine("玩家數量: ", String.valueOf(player_amount_score[0]), " 人", Formatting.GREEN),
