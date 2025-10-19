@@ -7,16 +7,19 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
+import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
@@ -36,6 +39,7 @@ import org.link_uuid.miningcontest.data.redis.RedisService;
 import org.link_uuid.miningcontest.data.redis.ServerTickHandler;
 import org.link_uuid.miningcontest.data.variable.variable;
 import org.link_uuid.miningcontest.event.PlayerDeadEvent;
+import org.link_uuid.miningcontest.event.PlayerPvP;
 import org.link_uuid.miningcontest.payload.packets.*;
 import org.link_uuid.miningcontest.server_init.server_init;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
@@ -55,6 +59,7 @@ import static net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.START_
 import static net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents.*;
 import static net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.*;
 import static net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.*;
+import static net.fabricmc.fabric.impl.client.gametest.TestSystemProperties.ENABLED;
 import static org.json.XMLTokener.entity;
 import static org.link_uuid.miningcontest.MiningContestCommon.MOD_ID;
 import static org.link_uuid.miningcontest.blockregister.ores.*;
@@ -74,11 +79,13 @@ public class MiningContestServer implements DedicatedServerModInitializer {
     private variable variable = new variable();
     public static int mark = 0;
 
+
+
     @Override
     public void onInitializeServer() {
         PlayerJoinEvent.register();
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
-            if (!alive && get_server("session") == 1) {
+            if (!alive) {
                 System.out.println("自動復活完成: " + newPlayer.getName().getString());
 
                 // 復活後的處理（傳送、訊息等）
@@ -249,35 +256,9 @@ public class MiningContestServer implements DedicatedServerModInitializer {
 
         START_SERVER_TICK.register(new ServerTickHandler());
         END_SERVER_TICK.register(RadiationHandler::onServerTick);
-        AFTER.register((world, player, pos, state, entity) -> {
-            if(state.getBlock().equals(URANIUM_DEEPSLATE_ORE) || state.getBlock().equals(URANIUM_ORE) ){
-                //player.sendMessage(Text.literal(state.getBlock().getName().getString()+"5分"), false);
-                player.sendMessage(Text.literal("鈾原礦+5分").formatted(Formatting.GREEN),false);
-                mark+=5;// 播放音效
-                player.getWorld().playSound(
-                        null, // null = all nearby players hear it
-                        player.getBlockPos(),
-                        SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP,
-                        SoundCategory.PLAYERS,
-                        1.0f,
-                        1.0f
-                );
-            }
-            if(state.getBlock().equals(LEAD_DEEPSLATE_ORE) || state.getBlock().equals(LEAD_ORE) ){
-                //player.sendMessage(Text.literal(state.getBlock().getName().getString()+"5分"), false);
-                player.sendMessage(Text.literal("鉛原礦+5分").formatted(Formatting.GREEN),false);
-                mark+=5;// 播放音效
-                player.getWorld().playSound(
-                        null, // null = all nearby players hear it
-                        player.getBlockPos(),
-                        SoundEvents.ENTITY_EXPERIENCE_ORB_PICKUP,
-                        SoundCategory.PLAYERS,
-                        1.0f,
-                        1.0f
-                );
-            }
-        });
+        PlayerPvP.register();
         }
+
 
     private void registerServerEvents() {
         // 可選：在世界載入完成後執行（更安全）

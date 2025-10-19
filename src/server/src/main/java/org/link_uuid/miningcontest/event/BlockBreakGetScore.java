@@ -50,16 +50,22 @@ public class BlockBreakGetScore {
             giveOreReward(player, pos, "金原礦", 8, 12);
         }
         else if (state.getBlock().equals(Blocks.IRON_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_IRON_ORE)) {
-            giveOreReward(player, pos, "鐵原礦", 1, 2);
+            giveOreReward(player, pos, "鐵原礦", 3, 5);
         }
         else if (state.getBlock().equals(Blocks.REDSTONE_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_REDSTONE_ORE)) {
             giveOreReward(player, pos, "紅石礦", 6, 10);
         }
         else if (state.getBlock().equals(Blocks.LAPIS_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_LAPIS_ORE)) {
-            giveOreReward(player, pos, "青金石礦", 1, 2);
+            giveOreReward(player, pos, "青金石礦", 8, 10);
         }
         else if (state.getBlock().equals(Blocks.EMERALD_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_EMERALD_ORE)) {
             giveOreReward(player, pos, "綠寶石礦", 300, 380);
+        }
+        else if (state.getBlock().equals(Blocks.COAL_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_COAL_ORE)) {
+            giveOreReward(player, pos, "煤礦", 1, 2);
+        }
+        else if (state.getBlock().equals(Blocks.COPPER_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_COPPER_ORE)) {
+            giveOreReward(player, pos, "煤礦", 1, 2);
         }
     }
 

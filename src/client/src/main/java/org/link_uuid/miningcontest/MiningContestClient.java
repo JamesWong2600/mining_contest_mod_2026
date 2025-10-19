@@ -56,6 +56,7 @@ public class MiningContestClient implements ClientModInitializer {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client_2) -> {
             if (isSingleplayerWorld(client_2)) {
                 blockSingleplayerAccess(client_2);
+                //just test
             }
         });
 
