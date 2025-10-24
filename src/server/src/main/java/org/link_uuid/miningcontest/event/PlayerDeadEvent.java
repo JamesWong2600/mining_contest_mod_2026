@@ -76,7 +76,21 @@ public class PlayerDeadEvent {
                 e.printStackTrace();
             }
         }else{
-            player.sendMessage(Text.literal("§6遊戲開始!"));
+            String sql = "UPDATE playerdata SET point = point - 30 WHERE uuid = ?";
+
+            try (Connection conn = DatabaseManager.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+                stmt.setString(1, String.valueOf(player.getUuid()));
+
+                int rowsAffected = stmt.executeUpdate();
+                System.out.println("Database insert affected " + rowsAffected + " rows");
+
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            player.sendMessage(Text.literal("§6死亡-30分!"));
             ServerWorld world = server.getOverworld();
             int X = randomInt(-5000, 5000);
             int Z = randomInt(-5000, 5000);

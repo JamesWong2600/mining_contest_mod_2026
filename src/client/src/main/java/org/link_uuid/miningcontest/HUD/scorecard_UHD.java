@@ -170,6 +170,7 @@ public class scorecard_UHD implements HudRenderCallback {
                     // Header - gold and bold
                     (Text) Text.literal("麥塊新春挖礦大賽2026").formatted(Formatting.GOLD, Formatting.BOLD),
 
+                    (Text) createLine("目前狀態: ", "正在比賽", "", Formatting.GREEN),
                     // Remaining time - label in white, value in green, unit in gray
                     (Text) createLine("剩餘時間: ", String.valueOf(timer_index_score[0]), " s", Formatting.GREEN),
 
@@ -184,6 +185,26 @@ public class scorecard_UHD implements HudRenderCallback {
                     (Text) createLine("當前身體倫琴值: ", String.format("%.2f", R), " R", Formatting.GREEN),
 
                     (Text)  createLine("輻射防護能力: ", String.valueOf(pings_score[0]), " %", Formatting.GREEN),
+                    // Ping - label in white, value in light purple, unit in gray
+                    (Text) createLine("ping: ", String.valueOf(pings_score[0]), " ms", getPingColor(pings_score[0])),
+
+                    // MSPT - label in white, value in red, unit in gray
+                    (Text) createLine("mspt: ", String.valueOf(mspt_score[0]), " ms", Formatting.GREEN),
+
+            };
+        }
+        else if(session_score[0] == 3){
+            lines = new Text[]{
+                    // Header - gold and bold
+                    (Text) Text.literal("麥塊新春挖礦大賽2026").formatted(Formatting.GOLD, Formatting.BOLD),
+
+                    (Text) createLine("目前狀態: ", "比賽已結束", "", Formatting.GREEN),
+                    // Your score - label in white, value in yellow, unit in gray
+                    (Text)  createLine("你的最終分數: ", String.valueOf(score_score[0]), " 分", Formatting.GREEN),
+
+                    // Player count - label in white, value in aqua, unit in gray
+                    (Text) createLine("玩家數量: ", String.valueOf(player_amount_score[0]), " 人", Formatting.GREEN),
+
                     // Ping - label in white, value in light purple, unit in gray
                     (Text) createLine("ping: ", String.valueOf(pings_score[0]), " ms", getPingColor(pings_score[0])),
 

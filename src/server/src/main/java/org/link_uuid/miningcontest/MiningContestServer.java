@@ -7,25 +7,11 @@ import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameMode;
 import net.minecraft.world.GameRules;
-import net.minecraft.world.TeleportTarget;
-import net.minecraft.world.World;
 import org.link_uuid.miningcontest.command.AddAdminCommand;
 import org.link_uuid.miningcontest.command.StartGame;
 import org.link_uuid.miningcontest.command.SwitchPVPMode;
@@ -38,7 +24,7 @@ import org.link_uuid.miningcontest.data.redis.RedisManager;
 import org.link_uuid.miningcontest.data.redis.RedisService;
 import org.link_uuid.miningcontest.data.redis.ServerTickHandler;
 import org.link_uuid.miningcontest.data.variable.variable;
-import org.link_uuid.miningcontest.event.PlayerDeadEvent;
+import org.link_uuid.miningcontest.event.BlockBreakGetScore;
 import org.link_uuid.miningcontest.event.PlayerPvP;
 import org.link_uuid.miningcontest.payload.packets.*;
 import org.link_uuid.miningcontest.server_init.server_init;
@@ -48,21 +34,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static java.awt.FileDialog.LOAD;
 import static net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTING;
 import static net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.END_SERVER_TICK;
 import static net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents.START_SERVER_TICK;
-import static net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents.*;
-import static net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents.*;
 import static net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents.*;
-import static net.fabricmc.fabric.impl.client.gametest.TestSystemProperties.ENABLED;
-import static org.json.XMLTokener.entity;
 import static org.link_uuid.miningcontest.MiningContestCommon.MOD_ID;
-import static org.link_uuid.miningcontest.blockregister.ores.*;
 import static org.link_uuid.miningcontest.data.cache.Cache.get_server;
 import static org.link_uuid.miningcontest.data.cache.Cache.put_server;
 import static org.link_uuid.miningcontest.data.ping_and_mspt.mspt.getCurrentMspt;
@@ -72,6 +51,7 @@ import static org.link_uuid.miningcontest.data.sqlite.lobby.set_lobby.lobbyLoad;
 import static org.link_uuid.miningcontest.event.BlockBreakGetScore.handleOreMining;
 import static org.link_uuid.miningcontest.event.PlayerDeadEvent.instantRespawn;
 import static org.link_uuid.miningcontest.event.PlayerDeadEvent.onRespawnComplete;
+import static org.link_uuid.miningcontest.server_init.set_boarder.setWorldBorder;
 
 public class MiningContestServer implements DedicatedServerModInitializer {
 
@@ -83,6 +63,7 @@ public class MiningContestServer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
+
         PlayerJoinEvent.register();
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
             if (!alive) {
@@ -93,12 +74,13 @@ public class MiningContestServer implements DedicatedServerModInitializer {
             }
         });
 
-        PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
-            handleOreMining(player, pos, state);
-        });
+        //PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, entity) -> {
+        //    handleOreMining(player, pos, state);
+       // });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
             countdown.tick(); // Update timer every tick
+
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -114,8 +96,10 @@ public class MiningContestServer implements DedicatedServerModInitializer {
             // 設定全域 keepInventory 為 true
             put_server("session",1);
             put_server("player_amount",1);
-            put_server("time",3600);
+            put_server("time",60);
+            BlockBreakGetScore.init();
             for (ServerWorld world : server.getWorlds()) {
+                setWorldBorder(world, 5000);
                 world.getGameRules().get(GameRules.KEEP_INVENTORY).set(true, server);
                 world.getGameRules().get(GameRules.DO_IMMEDIATE_RESPAWN).set(true, server);
             }

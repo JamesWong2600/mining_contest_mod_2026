@@ -2,10 +2,10 @@ package org.link_uuid.miningcontest.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.vehicle.CommandBlockMinecartEntity;
@@ -15,6 +15,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -26,18 +27,18 @@ import net.minecraft.world.chunk.ChunkStatus;
 import org.link_uuid.miningcontest.data.event.timer.countdown;
 import org.link_uuid.miningcontest.data.mysqlserver.DatabaseManager;
 import org.link_uuid.miningcontest.data.variable.variable;
+import org.link_uuid.miningcontest.payload.packets.CountdownPackets;
+import org.link_uuid.miningcontest.payload.packets.MsptPackets;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Set;
 import java.util.UUID;
 
 import static net.minecraft.server.command.CommandManager.literal;
-import static org.link_uuid.miningcontest.MiningContestServer.randomInt;
 import static org.link_uuid.miningcontest.data.cache.Cache.put_server;
-import static org.link_uuid.miningcontest.server_init.server_init.server;
+
 public class StartGame {
     private static final int COUNTDOWN_SECONDS = 10;
     private static int remainingTicks = 0; // 改為 ticks
@@ -58,22 +59,39 @@ public class StartGame {
         isCountingDown = true;
         onCompleteCallback = onComplete;
         server = currentServer;
-
-        broadcastCountdownMessage();
     }
 
+
+    public static void update_tp(){
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+        String sql = "UPDATE playerdata SET tp = ? WHERE uuid = ?";
+
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, 1);
+            stmt.setString(2, String.valueOf(player.getUuid()));
+
+            int rowsAffected = stmt.executeUpdate();
+            System.out.println("Database insert affected " + rowsAffected + " rows");
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        }
+    }
     // tick() 方法修正
     public static void tick() {
         if (!isCountingDown) return;
 
-        remainingTicks--;
 
         // 只在整秒時顯示訊息
         if (remainingTicks % TICKS_PER_SECOND == 0) {
             int secondsRemaining = remainingTicks / TICKS_PER_SECOND;
 
-            if (secondsRemaining <= 0) {
-                // 倒數結束
+            if (secondsRemaining < 0) {
+                update_tp();
                 isCountingDown = false;
                 broadcastMessage("§a遊戲開始!");
                 if (onCompleteCallback != null) {
@@ -81,11 +99,14 @@ public class StartGame {
                 }
             } else {
                 // 在特定時間點顯示訊息
-                if (secondsRemaining <= 3 || secondsRemaining == 5 || secondsRemaining == 10) {
-                    broadcastCountdownMessage();
+                broadcastCountdownMessage();
+                for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                    ServerPlayNetworking.send(player, new CountdownPackets(secondsRemaining,System.currentTimeMillis(),1));
                 }
             }
+
         }
+        remainingTicks--;
     }
 
     private static void broadcastCountdownMessage() {

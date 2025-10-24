@@ -37,5 +37,9 @@ public class payload_register {
         ScorePackets.ID,
         ScorePackets.CODEC
         );
+        PayloadTypeRegistry.playS2C().register(
+        CountdownPackets.ID,
+        CountdownPackets.CODEC
+        );
     }
 }

@@ -24,8 +24,29 @@ import static org.link_uuid.miningcontest.blockregister.ores.*;
 
 public class BlockBreakGetScore {
 
+    public static void init() {
+        // 初始化自然生成標記系統
+        NaturalOreMarker.init();
+
+        // 註冊方塊破壞事件
+        PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
+            if (!world.isClient()) {
+                handleOreMining(player, pos, state);
+            }
+        });
+    }
+
     public static void handleOreMining(PlayerEntity player, BlockPos pos, BlockState state) {
-        // 處理鈾礦
+        // 檢查是否是自然生成的礦物
+        if (!NaturalOreMarker.isNaturalOre(pos)) {
+            player.sendMessage(Text.literal("§7玩家放置礦物不計分"), true);
+            return;
+        }
+
+        // 移除自然標記（防止重複計算）
+        NaturalOreStorage.removeNaturalOre(pos);
+
+        // 原有的分數邏輯
         if (state.getBlock().equals(URANIUM_ORE) || state.getBlock().equals(URANIUM_DEEPSLATE_ORE)) {
             giveOreReward(player, pos, "鈾原礦", 500, 600);
         }
@@ -46,7 +67,7 @@ public class BlockBreakGetScore {
         else if (state.getBlock().equals(DEEPSLATE_DIAMOND_ORE_LEVEL_THREE)) {
             giveOreReward(player, pos, "鑽石原礦III", 70, 85);
         }
-        else if (state.getBlock().equals(Blocks.GOLD_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_GOLD_ORE)  ) {
+        else if (state.getBlock().equals(Blocks.GOLD_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_GOLD_ORE)) {
             giveOreReward(player, pos, "金原礦", 8, 12);
         }
         else if (state.getBlock().equals(Blocks.IRON_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_IRON_ORE)) {
@@ -65,50 +86,47 @@ public class BlockBreakGetScore {
             giveOreReward(player, pos, "煤礦", 1, 2);
         }
         else if (state.getBlock().equals(Blocks.COPPER_ORE) || state.getBlock().equals(Blocks.DEEPSLATE_COPPER_ORE)) {
-            giveOreReward(player, pos, "煤礦", 1, 2);
+            giveOreReward(player, pos, "銅礦", 1, 2);
         }
     }
 
     private static void giveOreReward(PlayerEntity player, BlockPos pos, String oreName, int minScore, int maxScore) {
         // 生成隨機分數
         int baseScore = getRandomScore(minScore, maxScore);
-        boolean isCritical = isCriticalHit(); // 檢查是否暴擊
+        boolean isCritical = isCriticalHit();
 
         int finalScore = baseScore;
         Formatting textColor = Formatting.GREEN;
         String message = oreName + "+" + baseScore + "分";
 
-        // 處理暴擊
         if (isCritical) {
-            finalScore = baseScore * 2; // 雙倍分數
-            textColor = Formatting.GOLD; // 金色顯示
+            finalScore = baseScore * 2;
+            textColor = Formatting.GOLD;
             message = "✨ " + oreName + " 暴擊！+" + finalScore + "分 ✨";
-
-            // 播放暴擊音效
             playCriticalSound(player, pos);
-
-            // 暴擊粒子效果
             spawnCriticalParticles(player);
         } else {
-            // 普通音效
             playSound(player, pos);
         }
 
         // 發送消息
         player.sendMessage(Text.literal(message).formatted(textColor), false);
 
-        // 增加分數
+        // 增加分數到數據庫
+        addScoreToDatabase(player, finalScore);
+    }
+
+    private static void addScoreToDatabase(PlayerEntity player, int score) {
         String sql = "UPDATE playerdata SET point = point + ? WHERE uuid = ?";
 
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setInt(1, finalScore);
+            stmt.setInt(1, score);
             stmt.setString(2, String.valueOf(player.getUuid()));
 
             int rowsAffected = stmt.executeUpdate();
-            System.out.println("Database insert affected " + rowsAffected + " rows");
-
+            System.out.println("為玩家 " + player.getName().getString() + " 添加 " + score + " 分，影響 " + rowsAffected + " 行");
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -117,7 +135,7 @@ public class BlockBreakGetScore {
 
     // 檢查是否暴擊（5% 概率）
     private static boolean isCriticalHit() {
-        return ThreadLocalRandom.current().nextDouble(100) < 5.0; // 5% 概率
+        return ThreadLocalRandom.current().nextDouble(100) < 5.0;
     }
 
     // 生成隨機分數
@@ -130,10 +148,10 @@ public class BlockBreakGetScore {
         player.getWorld().playSound(
                 null,
                 pos,
-                SoundEvents.ENTITY_PLAYER_LEVELUP, // 升級音效
+                SoundEvents.ENTITY_PLAYER_LEVELUP,
                 SoundCategory.PLAYERS,
                 1.0f,
-                1.2f // 提高音調
+                1.2f
         );
     }
 
@@ -155,21 +173,20 @@ public class BlockBreakGetScore {
         if (world instanceof ServerWorld) {
             ServerWorld serverWorld = (ServerWorld) world;
 
-            // 生成金色粒子效果
             serverWorld.spawnParticles(
                     ParticleTypes.END_ROD,
                     player.getX(), player.getY() + 1, player.getZ(),
-                    15,  // 數量
-                    0.5, 0.5, 0.5,  // 擴散範圍
-                    0.1  // 速度
+                    15,
+                    0.5, 0.5, 0.5,
+                    0.1
             );
 
             serverWorld.spawnParticles(
                     ParticleTypes.FIREWORK,
                     player.getX(), player.getY() + 1.5, player.getZ(),
-                    10,  // 數量
-                    0.3, 0.3, 0.3,  // 擴散範圍
-                    0.2  // 速度
+                    10,
+                    0.3, 0.3, 0.3,
+                    0.2
             );
         }
     }

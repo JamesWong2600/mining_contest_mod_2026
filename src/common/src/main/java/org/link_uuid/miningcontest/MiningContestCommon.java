@@ -1,15 +1,23 @@
 package org.link_uuid.miningcontest;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
+import net.fabricmc.fabric.api.registry.FuelRegistryEvents;
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnGroup;
+import net.minecraft.item.Item;
+import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
 import org.link_uuid.miningcontest.blockregister.diamond_re_rule.original_diamond_gen_remove;
 import org.link_uuid.miningcontest.blockregister.ores;
 import org.link_uuid.miningcontest.worldgen.uranium_expose.PlacementModifierTypeRegister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-
 import static org.link_uuid.miningcontest.items.initer.item_init;
 import static org.link_uuid.miningcontest.items.item.ignots.ignot_init;
+import static org.link_uuid.miningcontest.items.item.ores.uranium;
 import static org.link_uuid.miningcontest.payload.payload_register.payload_register_init;
 import org.link_uuid.miningcontest.payload.payload_register.*;
 public class MiningContestCommon implements ModInitializer {
@@ -24,6 +32,7 @@ public class MiningContestCommon implements ModInitializer {
         PlacementModifierTypeRegister.register();
         LOGGER.info("Mining Contest Mod Common initialized!");
         System.out.println("Mining Contest Mod Common initialized!");
+
 
     }
 }

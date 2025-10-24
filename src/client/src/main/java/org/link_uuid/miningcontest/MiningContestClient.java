@@ -5,8 +5,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.gui.screen.DeathScreen;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
@@ -18,11 +16,13 @@ import org.cef.browser.CefBrowser;
 import org.link_uuid.miningcontest.HUD.scorecard_UHD;
 import org.link_uuid.miningcontest.HUD.text_UHD;
 
+import static org.link_uuid.miningcontest.countdown.ClientCountdownManager_inEnd.end_init;
+import static org.link_uuid.miningcontest.countdown.ClientCountdownManager_inEnd.handleCountdown;
 import static org.link_uuid.miningcontest.items.armor.lead_armor.*;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-
-import java.lang.reflect.Field;
+import org.link_uuid.miningcontest.countdown.ClientCountdownManager_inEnd;
+import org.link_uuid.miningcontest.countdown.ClientCountdownManager_onstart;
 
 
 public class MiningContestClient implements ClientModInitializer {
@@ -50,15 +50,17 @@ public class MiningContestClient implements ClientModInitializer {
         HudRenderCallback.EVENT.register(new text_UHD());
         HudRenderCallback.EVENT.register(new scorecard_UHD());
         HudRenderCallback.EVENT.register(this::onHudRender);
-
+        ClientCountdownManager_onstart.init();
+        end_init();
 
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client_2) -> {
             if (isSingleplayerWorld(client_2)) {
                 blockSingleplayerAccess(client_2);
-                //just test
             }
+            resetHUDState();
         });
+
 
         // 可选：在标题屏幕显示警告
         ScreenEvents.AFTER_INIT.register((client_2, screen, scaledWidth, scaledHeight) -> {
@@ -66,6 +68,12 @@ public class MiningContestClient implements ClientModInitializer {
                 showSingleplayerWarning();
             }
         });
+    }
+    private static void resetHUDState() {
+        // Reset all your HUD variables
+        ClientCountdownManager_inEnd.text = "";
+        ClientCountdownManager_onstart.text = "";
+        // Add any other variables that need resetting
     }
 
     private boolean isSingleplayerWorld(MinecraftClient client) {

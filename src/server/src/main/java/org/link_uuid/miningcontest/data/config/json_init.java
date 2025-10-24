@@ -30,6 +30,9 @@ public class json_init {
         public String MysqlUser = "james";
         public String MysqlPassword = "EPS2367ios2024";
         public String server_ID = "1";
+        public int map_radius = 5000;
+        public int time = 3600;
+        public int web_server_port = 0;
     }
 
     public static void load() {
