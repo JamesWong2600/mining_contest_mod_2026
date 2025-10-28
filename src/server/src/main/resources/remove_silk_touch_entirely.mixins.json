@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.link_uuid.miningcontest.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "remove_silk_touch_entirely"
+  ],
+  "client": [],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

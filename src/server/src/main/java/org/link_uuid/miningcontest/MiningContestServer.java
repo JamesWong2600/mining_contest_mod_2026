@@ -9,8 +9,14 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.world.GameRules;
 import org.link_uuid.miningcontest.command.AddAdminCommand;
 import org.link_uuid.miningcontest.command.StartGame;
@@ -49,6 +55,7 @@ import static org.link_uuid.miningcontest.data.ping_and_mspt.ping.getPingSafe;
 import static org.link_uuid.miningcontest.data.redis.RedisService.getServerPlayerAmount;
 import static org.link_uuid.miningcontest.data.sqlite.lobby.set_lobby.lobbyLoad;
 import static org.link_uuid.miningcontest.event.BlockBreakGetScore.handleOreMining;
+import static org.link_uuid.miningcontest.event.NaturalOreMarker.isNaturalOre;
 import static org.link_uuid.miningcontest.event.PlayerDeadEvent.instantRespawn;
 import static org.link_uuid.miningcontest.event.PlayerDeadEvent.onRespawnComplete;
 import static org.link_uuid.miningcontest.server_init.set_boarder.setWorldBorder;
@@ -63,6 +70,14 @@ public class MiningContestServer implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
+
+        PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, blockEntity) -> {
+            if (EnchantmentHelper.hasEnchantments(player.getMainHandStack())) {
+                player.sendMessage(Text.literal("§7玩家放置礦物不計分"), true);
+                return false;
+            }
+            return true; // 允許破壞
+        });
 
         PlayerJoinEvent.register();
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
@@ -96,7 +111,7 @@ public class MiningContestServer implements DedicatedServerModInitializer {
             // 設定全域 keepInventory 為 true
             put_server("session",1);
             put_server("player_amount",1);
-            put_server("time",60);
+            put_server("time",600);
             BlockBreakGetScore.init();
             for (ServerWorld world : server.getWorlds()) {
                 setWorldBorder(world, 5000);

@@ -31,6 +31,15 @@ public class PlayerPvP {
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
             // Check if entity is a player and attacker is a player
             if (entity instanceof PlayerEntity target && source.getAttacker() instanceof PlayerEntity attacker) {
+                if (get_server("session") == 2){
+                    if (source.getSource() instanceof net.minecraft.entity.projectile.PersistentProjectileEntity arrow
+                            && arrow.getOwner() instanceof PlayerEntity) {
+                        // Cancel damage
+                        return false;
+                    }
+                    attacker.sendMessage(Text.literal("§c比賽期間不能PVP"), false);
+                    return false;
+                }
                 String SQL = "SELECT pvpmode FROM playerdata WHERE UUID = ?";
                 try (Connection conn = DatabaseManager.getConnection();
                      PreparedStatement damager_stmt = conn.prepareStatement(SQL);

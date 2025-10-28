@@ -4,8 +4,12 @@ import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -14,19 +18,19 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.link_uuid.miningcontest.data.mysqlserver.DatabaseManager;
+import net.minecraft.enchantment.EnchantmentHelper;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static net.minecraft.enchantment.Enchantments.SILK_TOUCH;
 import static org.link_uuid.miningcontest.blockregister.ores.*;
 
 public class BlockBreakGetScore {
 
     public static void init() {
-        // 初始化自然生成標記系統
-        NaturalOreMarker.init();
 
         // 註冊方塊破壞事件
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
@@ -38,13 +42,11 @@ public class BlockBreakGetScore {
 
     public static void handleOreMining(PlayerEntity player, BlockPos pos, BlockState state) {
         // 檢查是否是自然生成的礦物
-        if (!NaturalOreMarker.isNaturalOre(pos)) {
-            player.sendMessage(Text.literal("§7玩家放置礦物不計分"), true);
+
+        if (EnchantmentHelper.hasEnchantments(player.getMainHandStack())) {
             return;
         }
 
-        // 移除自然標記（防止重複計算）
-        NaturalOreStorage.removeNaturalOre(pos);
 
         // 原有的分數邏輯
         if (state.getBlock().equals(URANIUM_ORE) || state.getBlock().equals(URANIUM_DEEPSLATE_ORE)) {

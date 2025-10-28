@@ -9,6 +9,9 @@
       "org.link_uuid.miningcontest.MiningContestServer"
     ]
   },
+  "mixins": [
+    "remove_silk_touch_entirely.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=${loader_version}",
     "minecraft": "${minecraft_version}",

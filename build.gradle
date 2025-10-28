@@ -26,6 +26,8 @@ subprojects {
 
         // 所有模块都需要的通用依赖
         implementation 'redis.clients:jedis:4.4.0'
+
+
     }
 
     processResources {
